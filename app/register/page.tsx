@@ -1,9 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
+
+type FormData = {
+  name: string;
+  dob: string;
+  email: string;
+  ratingClassical: string;
+  ratingRapid: string;
+  ratingBlitz: string;
+  address: string;
+  phone: string;
+  level: string;
+};
+
+type InputProps = {
+  label: string;
+  name: keyof FormData;
+  type: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+};
 
 export default function RegisterForm() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     dob: "",
     email: "",
@@ -15,11 +35,11 @@ export default function RegisterForm() {
     level: "Beginner",
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Submitted Data:", formData);
     // TODO: Send to backend
@@ -108,7 +128,7 @@ export default function RegisterForm() {
   );
 }
 
-function Input({ label, name, type, value, onChange }) {
+function Input({ label, name, type, value, onChange }:InputProps) {
   return (
     <div>
       <label htmlFor={name} className="block font-semibold mb-1">
