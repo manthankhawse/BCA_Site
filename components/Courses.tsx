@@ -33,7 +33,7 @@ const courses = [
 export default function Courses() {
   const [flippedCards, setFlippedCards] = useState(Array(courses.length).fill(false));
 
-  const handleFlip = (index) => {
+  const handleFlip = (index: number) => {
     const newFlipped = [...flippedCards];
     newFlipped[index] = !newFlipped[index];
     setFlippedCards(newFlipped);
