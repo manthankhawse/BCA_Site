@@ -1,3 +1,5 @@
+'use client';
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -29,9 +31,17 @@ const courses = [
 ];
 
 export default function Courses() {
+  const [flippedCards, setFlippedCards] = useState(Array(courses.length).fill(false));
+
+  const handleFlip = (index) => {
+    const newFlipped = [...flippedCards];
+    newFlipped[index] = !newFlipped[index];
+    setFlippedCards(newFlipped);
+  };
+
   return (
     <section id="courses" className="relative py-16 px-4 bg-[#232323] text-white overflow-hidden">
-      {/* Blurred Background */}
+      {/* Background */}
       <div
         className="absolute inset-0 z-0 bg-center bg-cover blur-sm opacity-30"
         style={{
@@ -40,19 +50,23 @@ export default function Courses() {
         }}
       ></div>
 
-      {/* Foreground Content */}
+      {/* Foreground */}
       <div className="relative z-10 max-w-7xl mx-auto text-center">
         <h2 className="text-3xl font-bold mb-2">BCA Courses</h2>
         <div className="h-1 w-16 bg-gray-500 mx-auto mb-12"></div>
 
-        {/* Cards Grid */}
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {courses.map((course, idx) => (
             <div
               key={idx}
-              className="group [perspective:1000px] w-full h-80 mx-auto"
+              className="group [perspective:1000px] w-full h-80 mx-auto cursor-pointer"
+              onClick={() => handleFlip(idx)}
             >
-              <div className="relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
+              <div
+                className={`relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] ${
+                  flippedCards[idx] ? "[transform:rotateY(180deg)]" : "group-hover:[transform:rotateY(180deg)]"
+                }`}
+              >
                 {/* Front */}
                 <div className="absolute inset-0 bg-gray-700 rounded-xl backface-hidden flex flex-col items-center justify-center p-4">
                   <Image
