@@ -76,12 +76,24 @@ export default function Navbar() {
 
       {/* Mobile Dropdown */}
       {isOpen && (
-        <div className="md:hidden px-6 pb-4 space-y-2 text-base font-light">
-          <Link href="/" className="block hover:text-gray-300">Home</Link>
-          <Link href="#courses" className="block hover:text-gray-300">Programs</Link>
-          <Link href="#about" className="block hover:text-gray-300">About us</Link>
-          <Link href="#" className="block hover:text-gray-300">News</Link>
-          <Link href="#contact" className="block hover:text-gray-300">Contact</Link>
+        <div className="lg:hidden px-6 pb-4 space-y-4 text-base font-light">
+          <div className="space-y-2">
+            <Link href="/" className="block hover:text-gray-300">Home</Link>
+            <Link href="/#courses" className="block hover:text-gray-300">Programs</Link>
+            <Link href="/#about" className="block hover:text-gray-300">About us</Link>
+            <Link href="/#gallery" className="block hover:text-gray-300">Gallery</Link>
+            <Link href="/#contact" className="block hover:text-gray-300">Contact</Link>
+          </div>
+          
+          {/* Login Button in Mobile Dropdown (hidden on tablet and above where it's already in the header) */}
+          <div className="md:hidden pt-2 border-t border-gray-700">
+            <Link
+              href="/auth/login"
+              className="mt-4 bg-amber-500 hover:bg-amber-400 text-black font-semibold px-5 py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center gap-2 shadow-lg w-full"
+            >
+              ♟ Login
+            </Link>
+          </div>
         </div>
       )}
     </nav>
