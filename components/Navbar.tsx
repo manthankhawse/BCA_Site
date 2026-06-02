@@ -36,7 +36,7 @@ export default function Navbar() {
             href="/auth/login"
             className="bg-amber-500 hover:bg-amber-400 text-black font-semibold px-5 py-2.5 rounded-lg text-sm transition-colors flex items-center gap-2 shadow-lg"
           >
-            ♟ Portal Login
+            ♟ Login
           </Link>
         </div>
 

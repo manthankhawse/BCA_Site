@@ -15,7 +15,7 @@ export default async function Tournaments() {
   return (
     <section className="py-20 px-6 max-w-6xl mx-auto" id="tournaments">
       <div className="flex flex-col items-center gap-4 mb-12 text-center">
-        <h2 className="text-3xl md:text-4xl font-bold text-white">
+        <h2 className="text-3xl md:text-4xl font-bold">
           BCA&apos;s Upcoming Tournaments
         </h2>
         <div className="h-[3px] w-16 bg-amber-500 rounded-full" />
