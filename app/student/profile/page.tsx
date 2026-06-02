@@ -124,23 +124,7 @@ export default function StudentProfile() {
 
             {profile.bio && <p className="text-gray-400 text-sm mt-3 max-w-lg">{profile.bio}</p>}
 
-            {/* Rating bar */}
-            <div className="mt-4 space-y-1.5">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-500">🌱 Beginner</span>
-                <span className="text-gray-500">👑 Grandmaster</span>
-              </div>
-              <div className="h-2.5 bg-white/10 rounded-full overflow-hidden relative">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-green-500 via-amber-500 to-red-500 transition-all duration-700"
-                  style={{ width: `${ratingProgress}%` }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent" />
-              </div>
-              <p className="text-center text-xs text-gray-500">
-                {ratingProgress.toFixed(0)}% to Grandmaster • Currently <span className={`font-medium ${titleInfo.color}`}>{titleInfo.title}</span>
-              </p>
-            </div>
+            
           </div>
         </div>
       </div>
@@ -150,7 +134,6 @@ export default function StudentProfile() {
         {[
           { icon: BookOpen, label: 'Courses', value: profile.enrolledCourses.length, color: 'text-amber-400', bg: 'from-amber-500/10 border-amber-500/20' },
           { icon: Trophy, label: 'Rating', value: rating, color: 'text-yellow-400', bg: 'from-yellow-500/10 border-yellow-500/20' },
-          { icon: Star, label: 'Title', value: titleInfo.emoji, color: 'text-cyan-400', bg: 'from-cyan-500/10 border-cyan-500/20' },
           { icon: Calendar, label: 'Member since', value: validDate ? joined.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '—', color: 'text-violet-400', bg: 'from-violet-500/10 border-violet-500/20' },
         ].map((stat, i) => (
           <div key={i} className={`bg-gradient-to-br ${stat.bg} to-transparent border rounded-xl p-4`}>
