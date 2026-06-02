@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: bca_mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: bca_admin
+      MONGO_INITDB_ROOT_PASSWORD: bca_secret123
+      MONGO_INITDB_DATABASE: bca_erp
+    volumes:
+      - bca_mongo_data:/data/db
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: bca_mongo_express
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: bca_admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: bca_secret123
+      ME_CONFIG_MONGODB_URL: mongodb://bca_admin:bca_secret123@mongo:27017/
+      ME_CONFIG_BASICAUTH: false
+    depends_on:
+      - mongo
+
+volumes:
+  bca_mongo_data:
