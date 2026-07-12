@@ -28,7 +28,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   if (!course) return NextResponse.json({ error: 'Course not found' }, { status: 404 });
 
   const contentsQuery = session.role === 'admin' ? { course: id } : { course: id, isPublished: true };
-  const contents = await Content.find(contentsQuery).sort({ createdAt: 1 }).lean();
+  const contents = await Content.find(contentsQuery)
+    .populate('comments.author', 'name role')
+    .sort({ createdAt: 1 })
+    .lean();
   const assignments = await Assignment.find({ course: id }).lean();
 
   return NextResponse.json({ course, contents, assignments });

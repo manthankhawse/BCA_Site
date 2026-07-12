@@ -1,12 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "framer-motion";
 import {
-  ArrowRight, Award, BellRing, BookOpen, Brain, CalendarClock, Crown,
-  Flag, Globe, GraduationCap, Home, Image as ImageIcon, Info, LogIn,
-  Mail, PlayCircle, Sparkles, Star, TrendingUp, Trophy, Users, MapPin, 
-  Phone, Send, Shield, CheckCircle, Facebook, Twitter, Instagram, Linkedin,
-  ChevronLeft, ChevronRight, Quote
+  ArrowRight, BookOpen, Brain,
+  Crown, Flag, Globe, GraduationCap, Home, Image as ImageIcon, Info, LogIn,
+  Mail, PlayCircle, Sparkles, Star, Trophy, MapPin,
+  Phone, Send, CheckCircle, Facebook, Twitter, Instagram, Linkedin,
+  ChevronLeft, ChevronRight, Quote, BellRing, Clock, AlertCircle
 } from "lucide-react";
 
 // --- Static Data ---
@@ -82,67 +83,221 @@ const programs = [
 // --- Animation Variants ---
 const fadeInUp = {
   hidden: { opacity: 0, y: 50 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } } // Smoother custom easing
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] as any } }
 };
 
 const staggerContainer = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.12 } }
-};
+} as any;
 
 // --- Reusable Button ---
-const Button = ({ children, className, variant = "default", ...props }) => {
+const Button = ({ children, className = "", variant = "default", type = "button", ...props }: {
+  children: React.ReactNode;
+  className?: string;
+  variant?: "default" | "outline";
+  type?: "button" | "submit" | "reset";
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  disabled?: boolean;
+  [key: string]: any;
+}) => {
   const baseStyle = "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 h-9 px-4 py-2 cursor-pointer";
   const variants = {
     default: "bg-gradient-to-r from-[oklch(0.769_0.188_70.08)] to-[oklch(0.6_0.15_70)] text-[oklch(0.205_0_0)] shadow-[0_0_24px_oklch(0.769_0.188_70.08/0.35)] hover:shadow-[0_0_40px_oklch(0.769_0.188_70.08/0.6)] hover:-translate-y-1 rounded-full",
     outline: "border border-white/20 bg-neutral-900/40 hover:bg-white/10 text-neutral-50 rounded-full backdrop-blur-md hover:-translate-y-1",
   };
   return (
-    <button className={`${baseStyle} ${variants[variant]} ${className}`} {...props}>
+    <button type={type} className={`${baseStyle} ${variants[variant]} ${className}`} {...props}>
       {children}
     </button>
   );
 };
 
+// --- Tournament Card (used for single + carousel) ---
+function TournamentCard({ tournament }: { tournament: any }) {
+  // Memoize the date string so the Date object is stable and doesn't cause infinite re-renders
+  const startDateStr: string | null = tournament.startDate || null;
+  const countdown = useTournamentCountdown(startDateStr);
+  return (
+    <div className="relative backdrop-blur-xl rounded-3xl bg-neutral-900/40 border border-white/10 overflow-hidden shadow-2xl">
+      <div className="bg-[radial-gradient(circle_at_50%_40%,oklch(0.769_0.188_70.08/0.15),transparent_60%)] absolute inset-0 pointer-events-none" />
+      <div className="bg-[repeating-conic-gradient(oklch(0.985_0_0)_0deg_90deg,transparent_90deg_180deg)] opacity-[0.03] absolute inset-0 pointer-events-none" />
+      <div className="relative text-center flex p-12 md:p-20 flex-col items-center gap-8">
+        <div className="relative">
+          <div className="bg-[oklch(0.769_0.188_70.08/0.3)] blur-3xl rounded-full absolute inset-0 size-32 mx-auto animate-pulse" />
+          <div className="relative size-28 border border-[oklch(0.769_0.188_70.08/0.4)] rounded-full bg-neutral-950/80 backdrop-blur-md shadow-[0_0_40px_oklch(0.769_0.188_70.08/0.3)] flex justify-center items-center">
+            <Trophy className="size-12 text-[oklch(0.769_0.188_70.08)]" />
+          </div>
+        </div>
+        <div className="flex flex-col gap-2">
+          <h3 className="font-serif font-medium text-3xl md:text-4xl">{tournament.name}</h3>
+          {tournament.description && <p className="text-[#a1a1a1] text-lg max-w-lg mx-auto">{tournament.description}</p>}
+          <div className="flex flex-wrap justify-center gap-3 mt-2">
+            {tournament.format && <span className="text-xs uppercase tracking-widest bg-neutral-800 border border-white/10 px-3 py-1 rounded-full text-neutral-300">{tournament.format}</span>}
+            {tournament.locationType && <span className="text-xs uppercase tracking-widest bg-neutral-800 border border-white/10 px-3 py-1 rounded-full text-neutral-300">{tournament.locationType}</span>}
+            {tournament.venue && <span className="text-xs uppercase tracking-widest bg-neutral-800 border border-white/10 px-3 py-1 rounded-full text-neutral-300">📍 {tournament.venue}</span>}
+          </div>
+        </div>
+        {startDateStr && (
+          <div className="flex items-center gap-3">
+            {[
+              { v: String(countdown.days).padStart(2, '0'), l: 'Days' },
+              { v: String(countdown.hours).padStart(2, '0'), l: 'Hours' },
+              { v: String(countdown.mins).padStart(2, '0'), l: 'Mins' },
+              { v: String(countdown.secs).padStart(2, '0'), l: 'Secs' },
+            ].map((t, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="rounded-2xl bg-neutral-950/80 border border-white/10 flex px-5 py-4 flex-col items-center shadow-inner min-w-[70px]">
+                  <span className="tabular-nums font-serif font-semibold text-3xl text-white">{t.v}</span>
+                  <span className="uppercase text-[oklch(0.769_0.188_70.08)] text-[10px] tracking-widest font-bold mt-1">{t.l}</span>
+                </div>
+                {i < 3 && <span className="font-serif text-[#a1a1a1] text-3xl animate-pulse">:</span>}
+              </div>
+            ))}
+          </div>
+        )}
+        {(tournament.registrationLink || tournament.link) && (
+          <a href={tournament.registrationLink || tournament.link} target="_blank" rel="noopener noreferrer">
+            <Button className="px-10 h-14 text-base"><BellRing className="size-5" /> Register Now</Button>
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// --- Countdown Timer Hook ---
+// Takes a date string to keep the dependency stable across renders
+function useTournamentCountdown(targetDateStr: string | null) {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
+  useEffect(() => {
+    if (!targetDateStr) return;
+    const targetTime = new Date(targetDateStr).getTime();
+    const tick = () => {
+      const diff = targetTime - Date.now();
+      if (diff <= 0) { setTimeLeft({ days: 0, hours: 0, mins: 0, secs: 0 }); return; }
+      setTimeLeft({
+        days: Math.floor(diff / 86400000),
+        hours: Math.floor((diff % 86400000) / 3600000),
+        mins: Math.floor((diff % 3600000) / 60000),
+        secs: Math.floor((diff % 60000) / 1000),
+      });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [targetDateStr]);
+  return timeLeft;
+}
+
 export default function BrilliantChessAcademy() {
+  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [reviewIndex, setReviewIndex] = useState(0);
+  const [liveReviews, setLiveReviews] = useState<typeof reviews | null>(null);
+  const [tournaments, setTournaments] = useState<any[]>([]);
+  const [tourIndex, setTourIndex] = useState(0);
+  const [tourLoading, setTourLoading] = useState(true);
+  const [authUser, setAuthUser] = useState<{ name: string; role: string } | null>(null);
+  // Contact form state
+  const [contactForm, setContactForm] = useState({ name: "", email: "", phone: "", program: "", message: "" });
+  const [contactStatus, setContactStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [contactError, setContactError] = useState("");
+
+  const displayReviews = liveReviews && liveReviews.length > 0 ? liveReviews : reviews;
 
   // --- Physics-based Parallax Setup ---
   const { scrollY } = useScroll();
-  
-  // By passing the raw scroll value into a spring, the CSS transforms lag behind the raw scroll 
-  // slightly, creating that buttery smooth easing effect.
-  const smoothScroll = useSpring(scrollY, {
-    stiffness: 50,
-    damping: 20,
-    restDelta: 0.001
-  });
-
+  const smoothScroll = useSpring(scrollY, { stiffness: 50, damping: 20, restDelta: 0.001 });
   const heroY = useTransform(smoothScroll, [0, 1000], ["0%", "30%"]);
-  // Reverse parallax for particles (they float up as you scroll down)
   const floatY = useTransform(smoothScroll, [0, 1000], ["0%", "-40%"]);
   const subtleParallax = useTransform(smoothScroll, [0, 2000], ["0%", "15%"]);
 
   useEffect(() => {
-    // Also enforcing smooth scroll behavior on the html element for anchor tags
     document.documentElement.style.scrollBehavior = "smooth";
-    
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Check if user is already logged in
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.user) setAuthUser(d.user); })
+      .catch(() => {});
+  }, []);
+
+  // Fetch live reviews
+  useEffect(() => {
+    fetch("/api/reviews")
+      .then(r => r.json())
+      .then(d => { if (d.reviews?.length) setLiveReviews(d.reviews); })
+      .catch(() => {});
+  }, []);
+
+  // Fetch upcoming tournaments (public)
+  useEffect(() => {
+    fetch("/api/public/tournaments")
+      .then(r => r.json())
+      .then(d => { setTournaments(d.tournaments || []); setTourLoading(false); })
+      .catch(() => setTourLoading(false));
+  }, []);
+
   // Review Carousel Auto-play
   useEffect(() => {
     const timer = setInterval(() => {
-      setReviewIndex((prev) => (prev + 1) % reviews.length);
+      setReviewIndex((prev) => (prev + 1) % displayReviews.length);
     }, 6000);
     return () => clearInterval(timer);
-  }, []);
+  }, [displayReviews.length]);
 
-  const nextReview = () => setReviewIndex((prev) => (prev + 1) % reviews.length);
-  const prevReview = () => setReviewIndex((prev) => (prev - 1 + reviews.length) % reviews.length);
+  const nextReview = () => setReviewIndex((prev) => (prev + 1) % displayReviews.length);
+  const prevReview = () => setReviewIndex((prev) => (prev - 1 + displayReviews.length) % displayReviews.length);
+
+  // Handle Start Your Journey
+  const handleStartJourney = async () => {
+    try {
+      const res = await fetch("/api/auth/me").catch(() => null);
+      if (res && res.ok) {
+        const data = await res.json();
+        router.push(data.user?.role === "admin" ? "/admin" : "/student");
+      } else {
+        router.push("/auth/login");
+      }
+    } catch {
+      router.push("/auth/login");
+    }
+  };
+
+  // Handle contact form submit
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!contactForm.name || !contactForm.email || !contactForm.message) {
+      setContactError("Name, email and message are required.");
+      return;
+    }
+    setContactStatus("sending");
+    setContactError("");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(contactForm),
+      });
+      if (res.ok) {
+        setContactStatus("success");
+        setContactForm({ name: "", email: "", phone: "", program: "", message: "" });
+      } else {
+        const d = await res.json();
+        setContactError(d.error || "Failed to send.");
+        setContactStatus("error");
+      }
+    } catch {
+      setContactError("Network error. Please try again.");
+      setContactStatus("error");
+    }
+  };
 
   return (
     <div className="relative font-sans bg-neutral-950 text-neutral-50 w-full min-h-screen overflow-x-hidden selection:bg-[oklch(0.769_0.188_70.08/0.3)] selection:text-white">
@@ -180,9 +335,22 @@ export default function BrilliantChessAcademy() {
           </nav>
 
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-            <Button className="px-6 font-semibold hidden md:flex">
-              <LogIn className="size-4" /> Login
-            </Button>
+            {authUser ? (
+              <a href={authUser.role === 'admin' ? '/admin' : '/student'}
+                className="hidden md:flex items-center gap-2.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-full px-4 py-2 transition-all group">
+                <div className="size-8 bg-gradient-to-br from-[oklch(0.769_0.188_70.08)] to-[oklch(0.55_0.14_70)] rounded-full flex items-center justify-center text-black font-bold text-sm">
+                  {authUser.name[0].toUpperCase()}
+                </div>
+                <span className="text-sm font-medium text-neutral-200 group-hover:text-white transition-colors">{authUser.name.split(' ')[0]}</span>
+                <ChevronRight className="size-3.5 text-neutral-500 group-hover:text-white transition-colors" />
+              </a>
+            ) : (
+              <a href="/auth/login">
+                <Button className="px-6 font-semibold hidden md:flex">
+                  <LogIn className="size-4" /> Login
+                </Button>
+              </a>
+            )}
           </motion.div>
         </div>
       </header>
@@ -225,10 +393,10 @@ export default function BrilliantChessAcademy() {
             </motion.p>
             
             <motion.div variants={fadeInUp} className="flex flex-wrap items-center gap-4">
-              <Button className="px-8 h-14 text-base shadow-[0_0_30px_oklch(0.769_0.188_70.08/0.4)]">
+              <Button onClick={handleStartJourney} className="px-8 h-14 text-base shadow-[0_0_30px_oklch(0.769_0.188_70.08/0.4)]">
                 <GraduationCap className="size-5" /> Start Your Journey
               </Button>
-              <Button variant="outline" className="px-8 h-14 text-base">
+              <Button variant="outline" onClick={() => document.getElementById('programs')?.scrollIntoView({ behavior: 'smooth' })} className="px-8 h-14 text-base">
                 <PlayCircle className="size-5" /> Explore Programs
               </Button>
             </motion.div>
@@ -355,8 +523,8 @@ export default function BrilliantChessAcademy() {
                   { icon: Globe, title: "National & International Reach", desc: "Preparing students for competitive tournaments worldwide." }
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-4 group">
-                    <div className={`size-12 shrink-0 ${item.bg || "bg-[oklch(0.769_0.188_70.08/0.15)]"} rounded-full flex justify-center items-center group-hover:scale-110 transition-transform duration-300`}>
-                      <item.icon className={`size-5 ${item.color || "text-[oklch(0.769_0.188_70.08)]"}`} />
+                    <div className="size-12 shrink-0 bg-[oklch(0.769_0.188_70.08/0.15)] rounded-full flex justify-center items-center group-hover:scale-110 transition-transform duration-300">
+                      <item.icon className="size-5 text-[oklch(0.769_0.188_70.08)]" />
                     </div>
                     <div className="flex flex-col gap-1 mt-1">
                       <h4 className="font-semibold text-lg text-white">{item.title}</h4>
@@ -428,40 +596,58 @@ export default function BrilliantChessAcademy() {
             <p className="max-w-xl text-[#a1a1a1] text-lg">Test your skills and compete against players of all levels. Join the battle!</p>
           </motion.div>
 
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="relative backdrop-blur-xl rounded-3xl bg-neutral-900/40 border border-white/10 overflow-hidden shadow-2xl">
-            <div className="bg-[radial-gradient(circle_at_50%_40%,oklch(0.769_0.188_70.08/0.15),transparent_60%)] absolute inset-0 pointer-events-none" />
-            <div className="bg-[repeating-conic-gradient(oklch(0.985_0_0)_0deg_90deg,transparent_90deg_180deg)] opacity-[0.03] absolute inset-0 pointer-events-none" />
-            
-            <div className="relative text-center flex p-16 md:p-24 flex-col items-center gap-8">
-              <div className="relative">
-                <div className="bg-[oklch(0.769_0.188_70.08/0.3)] blur-3xl rounded-full absolute inset-0 size-32 mx-auto animate-pulse" />
-                <div className="relative size-28 border border-[oklch(0.769_0.188_70.08/0.4)] rounded-full bg-neutral-950/80 backdrop-blur-md shadow-[0_0_40px_oklch(0.769_0.188_70.08/0.3)] flex justify-center items-center">
-                  <Trophy className="size-12 text-[oklch(0.769_0.188_70.08)]" />
+          {tourLoading ? (
+            <div className="flex justify-center py-12">
+              <div className="w-10 h-10 border-2 border-[oklch(0.769_0.188_70.08)] border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : tournaments.length === 0 ? (
+            /* No tournaments — no timer, no notify */
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
+              className="relative backdrop-blur-xl rounded-3xl bg-neutral-900/40 border border-white/10 overflow-hidden shadow-2xl">
+              <div className="bg-[radial-gradient(circle_at_50%_40%,oklch(0.769_0.188_70.08/0.1),transparent_60%)] absolute inset-0 pointer-events-none" />
+              <div className="relative text-center flex p-16 md:p-24 flex-col items-center gap-6">
+                <div className="relative">
+                  <div className="bg-[oklch(0.769_0.188_70.08/0.2)] blur-3xl rounded-full absolute inset-0 size-32 mx-auto" />
+                  <div className="relative size-28 border border-[oklch(0.769_0.188_70.08/0.3)] rounded-full bg-neutral-950/80 backdrop-blur-md flex justify-center items-center">
+                    <Trophy className="size-12 text-[oklch(0.769_0.188_70.08)]" />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <h3 className="font-serif font-medium text-3xl">No Upcoming Tournaments</h3>
+                  <p className="text-[#a1a1a1] text-lg max-w-md mx-auto">Check back later — the next battle is being prepared behind the scenes.</p>
                 </div>
               </div>
-              
-              <div className="flex flex-col gap-3">
-                <h3 className="font-serif font-medium text-3xl">No Upcoming Tournaments</h3>
-                <p className="text-[#a1a1a1] text-lg max-w-md mx-auto">Check back later for new events — the next battle is being prepared behind the scenes.</p>
-              </div>
-              
-              <div className="flex mt-4 items-center gap-4">
-                {[ { v: "14", l: "Days" }, { v: "08", l: "Hours" }, { v: "42", l: "Mins" } ].map((time, idx) => (
-                  <div key={idx} className="flex items-center gap-4">
-                    <div className="rounded-2xl bg-neutral-950/80 border border-white/10 flex px-6 py-4 flex-col items-center shadow-inner">
-                      <span className="tabular-nums font-serif font-semibold text-3xl text-white">{time.v}</span>
-                      <span className="uppercase text-[oklch(0.769_0.188_70.08)] text-[10px] tracking-widest font-bold mt-1">{time.l}</span>
-                    </div>
-                    {idx < 2 && <span className="font-serif text-[#a1a1a1] text-3xl animate-pulse">:</span>}
-                  </div>
+            </motion.div>
+          ) : tournaments.length === 1 ? (
+            /* Single tournament — full card with countdown */
+            <TournamentCard tournament={tournaments[0]} />
+          ) : (
+            /* Multiple tournaments — carousel */
+            <div className="relative">
+              <AnimatePresence mode="wait">
+                <motion.div key={tourIndex} initial={{ opacity: 0, x: 60 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -60 }} transition={{ duration: 0.4 }}>
+                  <TournamentCard tournament={tournaments[tourIndex]} />
+                </motion.div>
+              </AnimatePresence>
+              {/* Carousel nav */}
+              <button onClick={() => setTourIndex(p => (p - 1 + tournaments.length) % tournaments.length)}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-6 bg-neutral-950/80 border border-white/20 text-white hover:bg-[oklch(0.769_0.188_70.08)] hover:text-black p-3 md:p-4 rounded-full shadow-xl transition-all duration-300 z-20">
+                <ChevronLeft className="size-6" />
+              </button>
+              <button onClick={() => setTourIndex(p => (p + 1) % tournaments.length)}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-6 bg-neutral-950/80 border border-white/20 text-white hover:bg-[oklch(0.769_0.188_70.08)] hover:text-black p-3 md:p-4 rounded-full shadow-xl transition-all duration-300 z-20">
+                <ChevronRight className="size-6" />
+              </button>
+              <div className="flex justify-center mt-6 gap-2">
+                {tournaments.map((_, i) => (
+                  <button key={i} onClick={() => setTourIndex(i)}
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      i === tourIndex ? 'bg-[oklch(0.769_0.188_70.08)] w-8' : 'bg-white/20 w-2 hover:bg-white/40'
+                    }`} />
                 ))}
               </div>
-              
-              <Button className="px-10 h-14 mt-4 text-base">
-                <BellRing className="size-5" /> Notify Me
-              </Button>
             </div>
-          </motion.div>
+          )}
         </div>
       </section>
 
@@ -497,7 +683,7 @@ export default function BrilliantChessAcademy() {
                     transition={{ duration: 0.5 }}
                     className="text-xl md:text-2xl text-white text-center leading-relaxed font-serif italic absolute w-full"
                   >
-                    "{reviews[reviewIndex].comment}"
+                    "{displayReviews[reviewIndex]?.comment}"
                   </motion.p>
                 </AnimatePresence>
               </div>
@@ -512,9 +698,9 @@ export default function BrilliantChessAcademy() {
                   className="text-center mt-10"
                 >
                   <h3 className="text-lg font-bold text-[oklch(0.769_0.188_70.08)] tracking-wide uppercase">
-                    {reviews[reviewIndex].name}
+                    {displayReviews[reviewIndex]?.name}
                   </h3>
-                  <span className="text-[#a1a1a1] text-xs uppercase tracking-[2px] mt-1 block">BCA Student / Parent</span>
+                  <span className="text-[#a1a1a1] text-xs uppercase tracking-[2px] mt-1 block">{(displayReviews[reviewIndex] as any)?.role || 'BCA Student / Parent'}</span>
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -529,7 +715,7 @@ export default function BrilliantChessAcademy() {
 
             {/* Dots */}
             <div className="flex justify-center mt-10 gap-3">
-              {reviews.map((_, i) => (
+              {displayReviews.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setReviewIndex(i)}
@@ -605,27 +791,27 @@ export default function BrilliantChessAcademy() {
                   </div>
                 </div>
 
-                <form className="flex flex-col gap-6 flex-grow" onSubmit={(e) => e.preventDefault()}>
+                <form className="flex flex-col gap-6 flex-grow" onSubmit={handleContactSubmit}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex flex-col gap-2">
                       <label className="text-xs font-semibold uppercase tracking-wider text-[#a1a1a1]">Full Name</label>
-                      <input type="text" placeholder="Your full name" className="bg-neutral-950/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-600 focus:outline-none focus:border-[oklch(0.769_0.188_70.08)] focus:ring-1 focus:ring-[oklch(0.769_0.188_70.08)] transition-all" />
+                      <input type="text" placeholder="Your full name" value={contactForm.name} onChange={e => setContactForm(p => ({...p, name: e.target.value}))} className="bg-neutral-950/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-600 focus:outline-none focus:border-[oklch(0.769_0.188_70.08)] focus:ring-1 focus:ring-[oklch(0.769_0.188_70.08)] transition-all" />
                     </div>
                     <div className="flex flex-col gap-2">
                       <label className="text-xs font-semibold uppercase tracking-wider text-[#a1a1a1]">Email Address</label>
-                      <input type="email" placeholder="your@email.com" className="bg-neutral-950/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-600 focus:outline-none focus:border-[oklch(0.769_0.188_70.08)] focus:ring-1 focus:ring-[oklch(0.769_0.188_70.08)] transition-all" />
+                      <input type="email" placeholder="your@email.com" value={contactForm.email} onChange={e => setContactForm(p => ({...p, email: e.target.value}))} className="bg-neutral-950/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-600 focus:outline-none focus:border-[oklch(0.769_0.188_70.08)] focus:ring-1 focus:ring-[oklch(0.769_0.188_70.08)] transition-all" />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex flex-col gap-2">
                       <label className="text-xs font-semibold uppercase tracking-wider text-[#a1a1a1]">Phone Number</label>
-                      <input type="tel" placeholder="+91 00000 00000" className="bg-neutral-950/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-600 focus:outline-none focus:border-[oklch(0.769_0.188_70.08)] focus:ring-1 focus:ring-[oklch(0.769_0.188_70.08)] transition-all" />
+                      <input type="tel" placeholder="+91 00000 00000" value={contactForm.phone} onChange={e => setContactForm(p => ({...p, phone: e.target.value}))} className="bg-neutral-950/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-600 focus:outline-none focus:border-[oklch(0.769_0.188_70.08)] focus:ring-1 focus:ring-[oklch(0.769_0.188_70.08)] transition-all" />
                     </div>
                     <div className="flex flex-col gap-2">
                       <label className="text-xs font-semibold uppercase tracking-wider text-[#a1a1a1]">Select Program</label>
-                      <select className="bg-neutral-950/50 border border-white/10 rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:border-[oklch(0.769_0.188_70.08)] focus:ring-1 focus:ring-[oklch(0.769_0.188_70.08)] transition-all">
-                        <option value="" disabled selected>Choose a program</option>
+                      <select value={contactForm.program} onChange={e => setContactForm(p => ({...p, program: e.target.value}))} className="bg-neutral-950/50 border border-white/10 rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:border-[oklch(0.769_0.188_70.08)] focus:ring-1 focus:ring-[oklch(0.769_0.188_70.08)] transition-all">
+                        <option value="">Choose a program</option>
                         <option value="beginner">Beginner Training</option>
                         <option value="intermediate">Intermediate Training</option>
                         <option value="advanced">Advanced Training</option>
@@ -636,13 +822,32 @@ export default function BrilliantChessAcademy() {
 
                   <div className="flex flex-col gap-2 flex-grow">
                     <label className="text-xs font-semibold uppercase tracking-wider text-[#a1a1a1]">Message</label>
-                    <textarea placeholder="Tell us about your chess experience and goals..." className="bg-neutral-950/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-600 focus:outline-none focus:border-[oklch(0.769_0.188_70.08)] focus:ring-1 focus:ring-[oklch(0.769_0.188_70.08)] transition-all resize-none min-h-[120px] flex-grow" />
+                    <textarea placeholder="Tell us about your chess experience and goals..." value={contactForm.message} onChange={e => setContactForm(p => ({...p, message: e.target.value}))} className="bg-neutral-950/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-600 focus:outline-none focus:border-[oklch(0.769_0.188_70.08)] focus:ring-1 focus:ring-[oklch(0.769_0.188_70.08)] transition-all resize-none min-h-[120px] flex-grow" />
                   </div>
 
-                  <Button className="w-full h-14 text-base font-bold mt-auto group tracking-wide">
-                    <Send className="size-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" /> 
-                    Send Message
-                  </Button>
+                  {contactError && (
+                    <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded-xl">
+                      <AlertCircle className="size-4 shrink-0" /> {contactError}
+                    </div>
+                  )}
+
+                  {contactStatus === 'success' ? (
+                    <div className="flex items-center gap-3 bg-green-500/10 border border-green-500/30 text-green-400 px-5 py-4 rounded-xl">
+                      <CheckCircle className="size-5 shrink-0" />
+                      <div>
+                        <p className="font-semibold">Message sent!</p>
+                        <p className="text-sm opacity-80">We'll get back to you within 24 hours.</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <Button type="submit" disabled={contactStatus === 'sending'} className="w-full h-14 text-base font-bold mt-auto group tracking-wide disabled:opacity-60">
+                      {contactStatus === 'sending' ? (
+                        <><div className="size-5 border-2 border-current/30 border-t-current rounded-full animate-spin" /> Sending...</>
+                      ) : (
+                        <><Send className="size-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" /> Send Message</>
+                      )}
+                    </Button>
+                  )}
                 </form>
               </div>
             </motion.div>

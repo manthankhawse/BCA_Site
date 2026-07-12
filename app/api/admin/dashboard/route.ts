@@ -8,6 +8,9 @@ import { Submission } from '@/models/Submission';
 import { Post } from '@/models/Post';
 import { Tournament } from '@/models/Tournament';
 
+// Ensure all referenced models are registered with Mongoose before any populate() calls
+void Assignment; void Submission;
+
 export async function GET(req: NextRequest) {
   try {
     const payload = await getSessionFromRequest(req);

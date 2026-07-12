@@ -1,11 +1,11 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Users, BookOpen, MessageSquare, Settings,
   LogOut, Menu, X, GraduationCap, ChevronRight, Trophy,
-  Library, Puzzle, CalendarDays, BarChart3
+  Image as ImageIcon, Star, Mail, Bell
 } from 'lucide-react';
 
 const navItems = [
@@ -14,6 +14,10 @@ const navItems = [
   { href: '/admin/courses', label: 'Courses', icon: BookOpen },
   { href: '/admin/tournaments', label: 'Tournaments', icon: Trophy },
   { href: '/admin/community', label: 'Community', icon: MessageSquare },
+  { href: '/admin/notifications', label: 'Notifications', icon: Bell },
+  { href: '/admin/contact', label: 'Messages', icon: Mail },
+  { href: '/admin/gallery', label: 'Gallery', icon: ImageIcon },
+  { href: '/admin/reviews', label: 'Reviews', icon: Star },
   { href: '/admin/profile', label: 'Profile', icon: GraduationCap },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
@@ -22,12 +26,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/auth/login');
     router.refresh();
   };
+
+  // Poll for notifications every 30 seconds
+  useEffect(() => {
+    const fetchNotifications = () => {
+      fetch('/api/notifications')
+        .then(r => r.json())
+        .then(d => setUnreadCount(d.unreadCount || 0))
+        .catch(() => {});
+    };
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const isActive = (item: typeof navItems[0]) =>
     item.exact ? pathname === item.href : pathname.startsWith(item.href);
@@ -57,7 +75,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 group
                   ${active ? 'bg-amber-500/15 text-amber-400 border border-amber-500/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
                 <Icon size={17} className={active ? 'text-amber-400' : ''} />
-                <span className="text-sm font-medium">{item.label}</span>
+                <span className="text-sm font-medium flex-1">{item.label}</span>
                 {active && <ChevronRight size={14} className="ml-auto text-amber-400/60" />}
               </Link>
             );
@@ -80,7 +98,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden text-gray-400 hover:text-white">
             {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-3 ml-auto">
+            {/* Notification Bell */}
+            <Link href="/admin/notifications" className="relative">
+              <Bell size={18} className="text-gray-400 hover:text-white transition-colors" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </Link>
             <Link href="/admin/profile" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center">
                 <GraduationCap size={16} className="text-black" />

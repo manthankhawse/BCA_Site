@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   Plus, X, MessageSquare, Pin, Paperclip, Send,
-  Trash2, ChevronDown, ChevronUp, File
+  Trash2, ChevronDown, ChevronUp, File, Loader2
 } from 'lucide-react';
 
 interface Comment {
@@ -279,7 +279,8 @@ export default function StudentCommunity() {
               <div className="flex gap-3">
                 <button onClick={() => setShowModal(false)} className="flex-1 border border-white/10 text-gray-300 py-2.5 rounded-lg hover:bg-white/5 transition-colors text-sm">Cancel</button>
                 <button onClick={handlePost} disabled={saving || !form.body.trim()}
-                  className="flex-1 bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-black font-semibold py-2.5 rounded-lg transition-colors text-sm">
+                  className="flex-1 bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-black font-semibold py-2.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
+                  {saving && <Loader2 size={15} className="animate-spin" />}
                   {saving ? 'Posting...' : 'Post'}
                 </button>
               </div>

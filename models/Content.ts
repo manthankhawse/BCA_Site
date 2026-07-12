@@ -1,5 +1,12 @@
 import mongoose, { Schema, Document, models, model } from 'mongoose';
 
+export interface IComment {
+  _id?: mongoose.Types.ObjectId;
+  author: mongoose.Types.ObjectId;
+  body: string;
+  createdAt: Date;
+}
+
 export interface IContent extends Document {
   course: mongoose.Types.ObjectId;
   title: string;
@@ -10,8 +17,15 @@ export interface IContent extends Document {
   linkUrl?: string;
   order: number;
   isPublished: boolean;
+  comments: IComment[];
   createdAt: Date;
 }
+
+const CommentSchema = new Schema<IComment>({
+  author: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  body: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
 
 const ContentSchema = new Schema<IContent>(
   {
@@ -24,6 +38,7 @@ const ContentSchema = new Schema<IContent>(
     linkUrl: { type: String },
     order: { type: Number, default: 0 },
     isPublished: { type: Boolean, default: true },
+    comments: { type: [CommentSchema], default: [] }
   },
   { timestamps: true }
 );

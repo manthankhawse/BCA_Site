@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Pencil, Trash2, X, BookOpen, Users, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, BookOpen, Users, Eye, Loader2 } from 'lucide-react';
 
 interface Course {
   _id: string;
@@ -43,6 +43,7 @@ export default function AdminCourses() {
   const [editCourse, setEditCourse] = useState<Course | null>(null);
   const [form, setForm] = useState({ title: '', description: '', level: 'beginner', instructor: '', duration: '', isPublished: true });
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const [error, setError] = useState('');
 
   const fetchCourses = async () => {
@@ -84,8 +85,11 @@ export default function AdminCourses() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this course and all its content?')) return;
-    await fetch(`/api/admin/courses/${id}`, { method: 'DELETE' });
-    await fetchCourses();
+    setDeleting(id);
+    try {
+      await fetch(`/api/admin/courses/${id}`, { method: 'DELETE' });
+      await fetchCourses();
+    } finally { setDeleting(null); }
   };
 
   return (
@@ -149,9 +153,10 @@ export default function AdminCourses() {
                     </button>
                     <button
                       onClick={() => handleDelete(course._id)}
-                      className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                      disabled={deleting === course._id}
+                      className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors disabled:opacity-50"
                     >
-                      <Trash2 size={16} />
+                      {deleting === course._id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                     </button>
                   </div>
                 </div>
@@ -219,8 +224,9 @@ export default function AdminCourses() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex-1 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-semibold py-2.5 rounded-lg transition-colors text-sm"
+                className="flex-1 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-semibold py-2.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
               >
+                {saving && <Loader2 size={15} className="animate-spin" />}
                 {saving ? 'Saving...' : editCourse ? 'Save Changes' : 'Create Course'}
               </button>
             </div>

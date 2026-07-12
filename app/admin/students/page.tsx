@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Plus, Search, Pencil, Trash2, X, User, BookOpen } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, X, User, BookOpen, Loader2 } from 'lucide-react';
 
 interface Student {
   _id: string;
@@ -18,12 +18,12 @@ interface Course { _id: string; title: string; }
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl">
-        <div className="flex items-center justify-between p-6 border-b border-white/5">
+      <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between p-6 border-b border-white/5 flex-shrink-0">
           <h2 className="text-lg font-semibold text-white">{title}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-white"><X size={20} /></button>
         </div>
-        <div className="p-6">{children}</div>
+        <div className="p-6 overflow-y-auto">{children}</div>
       </div>
     </div>
   );
@@ -39,7 +39,10 @@ export default function AdminStudents() {
   const [enrollModal, setEnrollModal] = useState<Student | null>(null);
   const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', bio: '', rating: '1000' });
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [enrolling, setEnrolling] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [courseSearch, setCourseSearch] = useState('');
 
   const fetchStudents = async () => {
     const res = await fetch('/api/admin/students');
@@ -89,25 +92,40 @@ export default function AdminStudents() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this student?')) return;
-    await fetch(`/api/admin/students/${id}`, { method: 'DELETE' });
-    await fetchStudents();
+    setDeleting(id);
+    try {
+      await fetch(`/api/admin/students/${id}`, { method: 'DELETE' });
+      await fetchStudents();
+    } finally { setDeleting(null); }
   };
 
   const handleEnroll = async (courseId: string, action: 'enroll' | 'unenroll') => {
     if (!enrollModal) return;
-    await fetch(`/api/admin/courses/${courseId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studentId: enrollModal._id, action }),
-    });
-    await fetchStudents();
-    const updated = students.find(s => s._id === enrollModal._id);
-    if (updated) setEnrollModal(updated);
+    setEnrolling(courseId);
+    try {
+      await fetch(`/api/admin/courses/${courseId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId: enrollModal._id, action }),
+      });
+      await fetchStudents();
+      // Refresh the enrollModal state with updated data
+      const res = await fetch('/api/admin/students');
+      const data = await res.json();
+      const updatedStudents: Student[] = data.students || [];
+      setStudents(updatedStudents);
+      const updated = updatedStudents.find(s => s._id === enrollModal._id);
+      if (updated) setEnrollModal(updated);
+    } finally { setEnrolling(null); }
   };
 
   const filtered = students.filter(s =>
     s.name.toLowerCase().includes(search.toLowerCase()) ||
     s.email.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const filteredCourses = courses.filter(c =>
+    c.title.toLowerCase().includes(courseSearch.toLowerCase())
   );
 
   return (
@@ -141,7 +159,9 @@ export default function AdminStudents() {
       {/* Table */}
       <div className="bg-[#1a1a1a] border border-white/5 rounded-xl overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-16 text-gray-500">Loading...</div>
+          <div className="flex items-center justify-center py-16 text-gray-500 gap-2">
+            <Loader2 size={18} className="animate-spin" /> Loading...
+          </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-500 gap-3">
             <User size={40} className="opacity-30" />
@@ -196,7 +216,7 @@ export default function AdminStudents() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => setEnrollModal(s)}
+                          onClick={() => { setEnrollModal(s); setCourseSearch(''); }}
                           className="p-1.5 text-gray-400 hover:text-cyan-400 hover:bg-cyan-400/10 rounded-lg transition-colors"
                           title="Manage enrollment"
                         >
@@ -210,9 +230,10 @@ export default function AdminStudents() {
                         </button>
                         <button
                           onClick={() => handleDelete(s._id)}
-                          className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                          disabled={deleting === s._id}
+                          className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors disabled:opacity-50"
                         >
-                          <Trash2 size={16} />
+                          {deleting === s._id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                         </button>
                       </div>
                     </td>
@@ -264,37 +285,62 @@ export default function AdminStudents() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex-1 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-semibold py-2.5 rounded-lg transition-colors text-sm"
+                className="flex-1 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-semibold py-2.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
               >
-                {saving ? 'Saving...' : editStudent ? 'Save Changes' : 'Add Student'}
+                {saving ? <><Loader2 size={15} className="animate-spin" /> Saving...</> : editStudent ? 'Save Changes' : 'Add Student'}
               </button>
             </div>
           </div>
         </Modal>
       )}
 
-      {/* Enrollment Modal */}
+      {/* Enrollment Modal with Search */}
       {enrollModal && (
         <Modal title={`Manage Enrollment — ${enrollModal.name}`} onClose={() => { setEnrollModal(null); fetchStudents(); }}>
           <div className="space-y-3">
-            {courses.map(course => {
-              const enrolled = enrollModal.enrolledCourses.some(c => c._id === course._id);
-              return (
-                <div key={course._id} className="flex items-center justify-between p-3 bg-[#2a2a2a] rounded-lg">
-                  <span className="text-white text-sm">{course.title}</span>
-                  <button
-                    onClick={() => handleEnroll(course._id, enrolled ? 'unenroll' : 'enroll')}
-                    className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
-                      enrolled
-                        ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
-                        : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
-                    }`}
-                  >
-                    {enrolled ? 'Unenroll' : 'Enroll'}
-                  </button>
-                </div>
-              );
-            })}
+            {/* Course Search */}
+            <div className="relative">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+              <input
+                value={courseSearch}
+                onChange={e => setCourseSearch(e.target.value)}
+                placeholder="Search courses..."
+                className="w-full bg-[#2a2a2a] border border-white/10 rounded-lg pl-9 pr-4 py-2 text-white text-sm placeholder-gray-500
+                  focus:outline-none focus:border-amber-500/50 transition-colors"
+              />
+            </div>
+
+            {filteredCourses.length === 0 ? (
+              <p className="text-gray-500 text-sm text-center py-4">No courses match your search</p>
+            ) : (
+              <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                {filteredCourses.map(course => {
+                  const enrolled = enrollModal.enrolledCourses.some(c => c._id === course._id);
+                  const isLoading = enrolling === course._id;
+                  return (
+                    <div key={course._id} className="flex items-center justify-between p-3 bg-[#2a2a2a] rounded-lg">
+                      <span className="text-white text-sm truncate flex-1 mr-3">{course.title}</span>
+                      <button
+                        onClick={() => handleEnroll(course._id, enrolled ? 'unenroll' : 'enroll')}
+                        disabled={isLoading}
+                        className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 flex-shrink-0 disabled:opacity-60 ${
+                          enrolled
+                            ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                            : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
+                        }`}
+                      >
+                        {isLoading && <Loader2 size={12} className="animate-spin" />}
+                        {enrolled ? 'Unenroll' : 'Enroll'}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <p className="text-gray-600 text-xs pt-1">
+              {enrollModal.enrolledCourses.length} course{enrollModal.enrolledCourses.length !== 1 ? 's' : ''} enrolled
+            </p>
           </div>
         </Modal>
       )}
