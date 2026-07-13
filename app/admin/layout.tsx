@@ -16,8 +16,8 @@ const navItems = [
   { href: '/admin/community', label: 'Community', icon: MessageSquare },
   { href: '/admin/notifications', label: 'Notifications', icon: Bell },
   { href: '/admin/contact', label: 'Messages', icon: Mail },
-  { href: '/admin/gallery', label: 'Gallery', icon: ImageIcon },
-  { href: '/admin/reviews', label: 'Reviews', icon: Star },
+  // { href: '/admin/gallery', label: 'Gallery', icon: ImageIcon },
+  // { href: '/admin/reviews', label: 'Reviews', icon: Star },
   { href: '/admin/profile', label: 'Profile', icon: GraduationCap },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
