@@ -7,7 +7,8 @@ import {
   Crown, Flag, Globe, GraduationCap, Home, Image as ImageIcon, Info, LogIn,
   Mail, PlayCircle, Sparkles, Star, Trophy, MapPin,
   Phone, Send, CheckCircle, Facebook, Twitter, Instagram, Linkedin,
-  ChevronLeft, ChevronRight, Quote, BellRing, Clock, AlertCircle
+  ChevronLeft, ChevronRight, Quote, BellRing, Clock, AlertCircle,
+  Menu, X
 } from "lucide-react";
 
 // --- Static Data ---
@@ -23,10 +24,10 @@ const reviews = [
     name: "Krupal Wanjari",
     comment: "My son joined this Academy in 2014 and has achieved a lot—from Unrated to Rated and many tournament wins. He is a champion in Under 07, 09, and 11 age groups and won an Asian Gold medal in Under-09.",
   },
-  {
-    name: "Rudraksh Borkar",
-    comment: "The best academy to learn chess. BCA helps students improve step by step from beginner to advanced level.",
-  },
+  // {
+  //   name: "Rudraksh Borkar",
+  //   comment: "The best academy to learn chess. BCA helps students improve step by step from beginner to advanced level.",
+  // },
   {
     name: "Hiranmay Ingale",
     comment: "One of the best coaching centers for chess in Nagpur. Supportive coaches and a disciplined, friendly environment.",
@@ -122,7 +123,7 @@ function TournamentCard({ tournament }: { tournament: any }) {
     <div className="relative backdrop-blur-xl rounded-3xl bg-neutral-900/40 border border-white/10 overflow-hidden shadow-2xl">
       <div className="bg-[radial-gradient(circle_at_50%_40%,oklch(0.769_0.188_70.08/0.15),transparent_60%)] absolute inset-0 pointer-events-none" />
       <div className="bg-[repeating-conic-gradient(oklch(0.985_0_0)_0deg_90deg,transparent_90deg_180deg)] opacity-[0.03] absolute inset-0 pointer-events-none" />
-      <div className="relative text-center flex p-12 md:p-20 flex-col items-center gap-8">
+      <div className="relative text-center flex p-6 sm:p-12 md:p-20 flex-col items-center gap-8">
         <div className="relative">
           <div className="bg-[oklch(0.769_0.188_70.08/0.3)] blur-3xl rounded-full absolute inset-0 size-32 mx-auto animate-pulse" />
           <div className="relative size-28 border border-[oklch(0.769_0.188_70.08/0.4)] rounded-full bg-neutral-950/80 backdrop-blur-md shadow-[0_0_40px_oklch(0.769_0.188_70.08/0.3)] flex justify-center items-center">
@@ -131,7 +132,7 @@ function TournamentCard({ tournament }: { tournament: any }) {
         </div>
         <div className="flex flex-col gap-2">
           <h3 className="font-serif font-medium text-3xl md:text-4xl">{tournament.name}</h3>
-          {tournament.description && <p className="text-[#a1a1a1] text-lg max-w-lg mx-auto">{tournament.description}</p>}
+          {tournament.description && <p className="text-[#a1a1a1] text-base md:text-lg max-w-lg mx-auto">{tournament.description}</p>}
           <div className="flex flex-wrap justify-center gap-3 mt-2">
             {tournament.format && <span className="text-xs uppercase tracking-widest bg-neutral-800 border border-white/10 px-3 py-1 rounded-full text-neutral-300">{tournament.format}</span>}
             {tournament.locationType && <span className="text-xs uppercase tracking-widest bg-neutral-800 border border-white/10 px-3 py-1 rounded-full text-neutral-300">{tournament.locationType}</span>}
@@ -139,26 +140,26 @@ function TournamentCard({ tournament }: { tournament: any }) {
           </div>
         </div>
         {startDateStr && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             {[
               { v: String(countdown.days).padStart(2, '0'), l: 'Days' },
               { v: String(countdown.hours).padStart(2, '0'), l: 'Hours' },
               { v: String(countdown.mins).padStart(2, '0'), l: 'Mins' },
               { v: String(countdown.secs).padStart(2, '0'), l: 'Secs' },
             ].map((t, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="rounded-2xl bg-neutral-950/80 border border-white/10 flex px-5 py-4 flex-col items-center shadow-inner min-w-[70px]">
-                  <span className="tabular-nums font-serif font-semibold text-3xl text-white">{t.v}</span>
-                  <span className="uppercase text-[oklch(0.769_0.188_70.08)] text-[10px] tracking-widest font-bold mt-1">{t.l}</span>
+              <div key={i} className="flex items-center gap-1.5 sm:gap-3">
+                <div className="rounded-2xl bg-neutral-950/80 border border-white/10 flex px-3 py-2 sm:px-5 sm:py-4 flex-col items-center shadow-inner min-w-[55px] sm:min-w-[70px]">
+                  <span className="tabular-nums font-serif font-semibold text-xl sm:text-3xl text-white">{t.v}</span>
+                  <span className="uppercase text-[oklch(0.769_0.188_70.08)] text-[8px] sm:text-[10px] tracking-widest font-bold mt-1">{t.l}</span>
                 </div>
-                {i < 3 && <span className="font-serif text-[#a1a1a1] text-3xl animate-pulse">:</span>}
+                {i < 3 && <span className="font-serif text-[#a1a1a1] text-xl sm:text-3xl animate-pulse">:</span>}
               </div>
             ))}
           </div>
         )}
         {(tournament.registrationLink || tournament.link) && (
-          <a href={tournament.registrationLink || tournament.link} target="_blank" rel="noopener noreferrer">
-            <Button className="px-10 h-14 text-base"><BellRing className="size-5" /> Register Now</Button>
+          <a href={tournament.registrationLink || tournament.link} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+            <Button className="w-full sm:w-auto px-10 h-14 text-base"><BellRing className="size-5" /> Register Now</Button>
           </a>
         )}
       </div>
@@ -194,6 +195,50 @@ export default function BrilliantChessAcademy() {
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [reviewIndex, setReviewIndex] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // JSON-LD schema markup for LocalBusiness SEO
+  const schemaMarkup = {
+    "@context": "https://schema.org",
+    "@type": "SportsActivityLocation",
+    "name": "Brilliant Chess Academy",
+    "image": "https://brilliantchessacademy.com/assets/BCA%20Logo%20(Transparent).png",
+    "@id": "https://brilliantchessacademy.com/#academy",
+    "url": "https://brilliantchessacademy.com",
+    "telephone": "+91 98765 43210",
+    "priceRange": "$$",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Nagpur, Maharashtra",
+      "addressLocality": "Nagpur",
+      "postalCode": "440001",
+      "addressRegion": "Maharashtra",
+      "addressCountry": "IN"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 21.1458,
+      "longitude": 79.0882
+    },
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
+      ],
+      "opens": "10:00",
+      "closes": "20:00"
+    },
+    "sameAs": [
+      "https://www.facebook.com/brilliantchessacademy",
+      "https://www.instagram.com/brilliantchessacademy"
+    ]
+  };
+
   const [liveReviews, setLiveReviews] = useState<typeof reviews | null>(null);
   const [tournaments, setTournaments] = useState<any[]>([]);
   const [tourIndex, setTourIndex] = useState(0);
@@ -301,6 +346,11 @@ export default function BrilliantChessAcademy() {
 
   return (
     <div className="relative font-sans bg-neutral-950 text-neutral-50 w-full min-h-screen overflow-x-hidden selection:bg-[oklch(0.769_0.188_70.08/0.3)] selection:text-white">
+      {/* Schema.org Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaMarkup) }}
+      />
       
       {/* Top Progress / Glow Bars */}
       <div className="pointer-events-none fixed z-[60] bg-gradient-to-r from-[oklch(0.769_0.188_70.08)] via-[oklch(0.85_0.16_80)] to-[oklch(0.696_0.17_162.48)] w-full top-0 h-1 opacity-80" />
@@ -308,9 +358,9 @@ export default function BrilliantChessAcademy() {
 
       {/* Navigation */}
       <header className={`fixed z-50 transition-all duration-500 w-full ${scrolled ? "bg-neutral-950/80 backdrop-blur-xl border-b border-white/10 py-4 shadow-2xl" : "bg-transparent py-6"}`}>
-        <div className="max-w-[1140px] flex mx-auto px-8 justify-between items-center">
+        <div className="max-w-[1140px] flex mx-auto px-6 md:px-8 justify-between items-center relative">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3 group cursor-pointer">
-            <div className="size-10 bg-gradient-to-br from-[oklch(0.769_0.188_70.08)] to-[oklch(0.55_0.14_70)] shadow-[0_0_20px_oklch(0.769_0.188_70.08/0.4)] group-hover:shadow-[0_0_30px_oklch(0.769_0.188_70.08/0.6)] transition-all rounded-full flex justify-center items-center">
+            <div className="size-10 shrink-0 bg-gradient-to-br from-[oklch(0.769_0.188_70.08)] to-[oklch(0.55_0.14_70)] shadow-[0_0_20px_oklch(0.769_0.188_70.08/0.4)] group-hover:shadow-[0_0_30px_oklch(0.769_0.188_70.08/0.6)] transition-all rounded-full flex justify-center items-center">
               <Crown className="size-5 text-[oklch(0.205_0_0)]" />
             </div>
             <div className="leading-tight flex flex-col">
@@ -334,10 +384,10 @@ export default function BrilliantChessAcademy() {
             ))}
           </nav>
 
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="hidden md:block">
             {authUser ? (
               <a href={authUser.role === 'admin' ? '/admin' : '/student'}
-                className="hidden md:flex items-center gap-2.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-full px-4 py-2 transition-all group">
+                className="flex items-center gap-2.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-full px-4 py-2 transition-all group">
                 <div className="size-8 bg-gradient-to-br from-[oklch(0.769_0.188_70.08)] to-[oklch(0.55_0.14_70)] rounded-full flex items-center justify-center text-black font-bold text-sm">
                   {authUser.name[0].toUpperCase()}
                 </div>
@@ -346,12 +396,77 @@ export default function BrilliantChessAcademy() {
               </a>
             ) : (
               <a href="/auth/login">
-                <Button className="px-6 font-semibold hidden md:flex">
+                <Button className="px-6 font-semibold flex">
                   <LogIn className="size-4" /> Login
                 </Button>
               </a>
             )}
           </motion.div>
+
+          {/* Mobile Menu Button */}
+          <div className="flex md:hidden items-center">
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 border border-white/10 rounded-xl bg-neutral-900/50 hover:bg-white/10 transition-colors focus:outline-none"
+              aria-label="Toggle Menu"
+            >
+              {mobileMenuOpen ? <X className="size-6 text-white" /> : <Menu className="size-6 text-white" />}
+            </button>
+          </div>
+          
+          {/* Mobile Menu Dropdown */}
+          <AnimatePresence>
+            {mobileMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="absolute top-full left-0 w-full bg-neutral-950/95 backdrop-blur-2xl border-b border-white/10 md:hidden overflow-hidden shadow-2xl z-50"
+              >
+                <div className="flex flex-col px-6 py-6 gap-5">
+                  {["Home", "Programs", "About us", "Gallery", "Contact"].map((item) => (
+                    <a
+                      key={item}
+                      href={`#${item.toLowerCase().replace(' ', '-')}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 font-medium text-neutral-300 hover:text-white text-base py-2 transition-colors border-b border-white/5"
+                    >
+                      {item === "Home" && <Home className="size-4 text-[oklch(0.769_0.188_70.08)]" />}
+                      {item === "Programs" && <BookOpen className="size-4 text-[oklch(0.769_0.188_70.08)]" />}
+                      {item === "About us" && <Info className="size-4 text-[oklch(0.769_0.188_70.08)]" />}
+                      {item === "Gallery" && <ImageIcon className="size-4 text-[oklch(0.769_0.188_70.08)]" />}
+                      {item === "Contact" && <Mail className="size-4 text-[oklch(0.769_0.188_70.08)]" />}
+                      {item}
+                    </a>
+                  ))}
+                  <div className="pt-2">
+                    {authUser ? (
+                      <a
+                        href={authUser.role === 'admin' ? '/admin' : '/student'}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center justify-between bg-white/5 border border-white/10 rounded-2xl px-5 py-3 w-full"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="size-8 bg-gradient-to-br from-[oklch(0.769_0.188_70.08)] to-[oklch(0.55_0.14_70)] rounded-full flex items-center justify-center text-black font-bold text-sm">
+                            {authUser.name[0].toUpperCase()}
+                          </div>
+                          <span className="text-sm font-medium text-neutral-200">{authUser.name}</span>
+                        </div>
+                        <ChevronRight className="size-4 text-neutral-500" />
+                      </a>
+                    ) : (
+                      <a href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
+                        <Button className="w-full h-12 text-base font-semibold">
+                          <LogIn className="size-5" /> Login
+                        </Button>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </header>
 
@@ -383,7 +498,7 @@ export default function BrilliantChessAcademy() {
               <span className="text-[oklch(0.769_0.188_70.08)] uppercase text-xs tracking-[4px]">Where Strategic Brilliance Begins</span>
             </motion.div>
             
-            <motion.h1 variants={fadeInUp} className="font-serif font-medium text-6xl md:text-7xl lg:text-8xl leading-tight tracking-tight">
+            <motion.h1 variants={fadeInUp} className="font-serif font-medium text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-tight tracking-tight">
               Brilliant <br className="hidden md:block" />
               <span className="bg-gradient-to-r from-[oklch(0.769_0.188_70.08)] via-[oklch(0.88_0.14_85)] to-[oklch(0.6_0.13_70)] bg-clip-text text-transparent">Chess</span> Academy
             </motion.h1>
@@ -503,7 +618,7 @@ export default function BrilliantChessAcademy() {
               <img
                 src="https://images.unsplash.com/photo-1613902863716-8a8a96fc1de2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=900"
                 alt="Coaching"
-                className="relative object-cover shadow-[0_30px_60px_-20px_oklch(0_0_0/0.8)] rounded-2xl border border-white/10 w-full h-[500px]"
+                className="relative object-cover shadow-[0_30px_60px_-20px_oklch(0_0_0/0.8)] rounded-2xl border border-white/10 w-full h-[300px] sm:h-[400px] lg:h-[500px]"
               />
             </motion.div>
 
@@ -587,7 +702,7 @@ export default function BrilliantChessAcademy() {
       </section>
 
       {/* Tournaments Section */}
-      <section className="relative py-32 w-full overflow-hidden">
+      <section id="tournaments" className="relative py-32 w-full overflow-hidden">
         <div className="max-w-[1140px] mx-auto px-8 relative z-10">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="text-center flex mb-16 flex-col items-center gap-4">
             <span className="text-[oklch(0.769_0.188_70.08)] uppercase text-xs tracking-[4.8px] font-semibold">Compete</span>
@@ -652,7 +767,7 @@ export default function BrilliantChessAcademy() {
       </section>
 
       {/* Reviews Section (Testimonials Carousel) */}
-      <section className="relative py-32 w-full bg-neutral-950 overflow-hidden">
+      <section id="reviews" className="relative py-32 w-full bg-neutral-950 overflow-hidden">
         <motion.div style={{ y: subtleParallax }} className="bg-[radial-gradient(ellipse_at_center,oklch(0.205_0_0),oklch(0.145_0_0))] absolute inset-0 pointer-events-none h-[120%]" />
         
         <div className="relative max-w-[1140px] mx-auto px-8 z-10">
@@ -663,7 +778,7 @@ export default function BrilliantChessAcademy() {
           </motion.div>
 
           <div className="max-w-4xl mx-auto relative">
-            <div className="bg-neutral-900/40 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-16 shadow-2xl relative overflow-hidden min-h-[350px] flex flex-col justify-center">
+            <div className="bg-neutral-900/40 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 md:p-16 shadow-2xl relative overflow-hidden min-h-[300px] md:min-h-[350px] flex flex-col justify-center">
               
               <Quote className="absolute top-8 left-8 size-24 text-white/5 -rotate-12" />
 
@@ -673,7 +788,7 @@ export default function BrilliantChessAcademy() {
                 ))}
               </div>
 
-              <div className="relative h-[120px] flex items-center justify-center">
+              <div className="relative h-[200px] sm:h-[150px] md:h-[120px] flex items-center justify-center">
                 <AnimatePresence mode="wait">
                   <motion.p
                     key={reviewIndex}
@@ -681,7 +796,7 @@ export default function BrilliantChessAcademy() {
                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     exit={{ opacity: 0, y: -20, filter: "blur(4px)" }}
                     transition={{ duration: 0.5 }}
-                    className="text-xl md:text-2xl text-white text-center leading-relaxed font-serif italic absolute w-full"
+                    className="text-lg md:text-2xl text-white text-center leading-relaxed font-serif italic absolute w-full"
                   >
                     "{displayReviews[reviewIndex]?.comment}"
                   </motion.p>
@@ -706,10 +821,10 @@ export default function BrilliantChessAcademy() {
             </div>
 
             {/* Navigation Buttons */}
-            <button onClick={prevReview} className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-6 bg-neutral-950/80 border border-white/20 text-white hover:bg-[oklch(0.769_0.188_70.08)] hover:text-black hover:border-[oklch(0.769_0.188_70.08)] p-3 md:p-4 rounded-full shadow-xl transition-all duration-300 z-20">
+            <button onClick={prevReview} className="absolute left-2 md:left-0 top-1/2 -translate-y-1/2 md:-translate-x-6 bg-neutral-950/80 border border-white/20 text-white hover:bg-[oklch(0.769_0.188_70.08)] hover:text-black hover:border-[oklch(0.769_0.188_70.08)] p-3 md:p-4 rounded-full shadow-xl transition-all duration-300 z-20" aria-label="Previous Review">
               <ChevronLeft className="size-6" />
             </button>
-            <button onClick={nextReview} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-6 bg-neutral-950/80 border border-white/20 text-white hover:bg-[oklch(0.769_0.188_70.08)] hover:text-black hover:border-[oklch(0.769_0.188_70.08)] p-3 md:p-4 rounded-full shadow-xl transition-all duration-300 z-20">
+            <button onClick={nextReview} className="absolute right-2 md:right-0 top-1/2 -translate-y-1/2 md:translate-x-6 bg-neutral-950/80 border border-white/20 text-white hover:bg-[oklch(0.769_0.188_70.08)] hover:text-black hover:border-[oklch(0.769_0.188_70.08)] p-3 md:p-4 rounded-full shadow-xl transition-all duration-300 z-20" aria-label="Next Review">
               <ChevronRight className="size-6" />
             </button>
 
