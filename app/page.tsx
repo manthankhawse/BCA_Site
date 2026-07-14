@@ -1,4 +1,6 @@
 "use client";
+import NextImage from "next/image";
+import logo from "@/assets/BCA Logo (Transparent).png";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "framer-motion";
@@ -360,8 +362,8 @@ export default function BrilliantChessAcademy() {
       <header className={`fixed z-50 transition-all duration-500 w-full ${scrolled ? "bg-neutral-950/80 backdrop-blur-xl border-b border-white/10 py-4 shadow-2xl" : "bg-transparent py-6"}`}>
         <div className="max-w-[1140px] flex mx-auto px-6 md:px-8 justify-between items-center relative">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3 group cursor-pointer">
-            <div className="size-10 shrink-0 bg-gradient-to-br from-[oklch(0.769_0.188_70.08)] to-[oklch(0.55_0.14_70)] shadow-[0_0_20px_oklch(0.769_0.188_70.08/0.4)] group-hover:shadow-[0_0_30px_oklch(0.769_0.188_70.08/0.6)] transition-all rounded-full flex justify-center items-center">
-              <Crown className="size-5 text-[oklch(0.205_0_0)]" />
+            <div className="size-10 shrink-0 relative flex justify-center items-center">
+              <NextImage src={logo} alt="Brilliant Chess Academy Logo" width={40} height={40} className="object-contain" />
             </div>
             <div className="leading-tight flex flex-col">
               <span className="font-semibold text-neutral-50 text-sm leading-5 tracking-[3.2px]">BRILLIANT</span>
@@ -979,8 +981,8 @@ export default function BrilliantChessAcademy() {
             
             <div className="md:col-span-5 flex flex-col gap-6">
               <div className="flex items-center gap-3">
-                <div className="size-12 bg-gradient-to-br from-[oklch(0.769_0.188_70.08)] to-[oklch(0.55_0.14_70)] rounded-full flex justify-center items-center shadow-[0_0_15px_oklch(0.769_0.188_70.08/0.3)]">
-                  <Crown className="size-6 text-[oklch(0.205_0_0)]" />
+                <div className="size-12 shrink-0 relative flex justify-center items-center">
+                  <NextImage src={logo} alt="Brilliant Chess Academy Logo" width={48} height={48} className="object-contain" />
                 </div>
                 <div className="leading-tight flex flex-col">
                   <span className="font-semibold text-neutral-50 text-xl tracking-[4px]">BRILLIANT</span>

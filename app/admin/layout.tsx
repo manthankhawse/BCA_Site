@@ -1,11 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import logo from '@/assets/BCA Logo (Transparent).png';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Users, BookOpen, MessageSquare, Settings,
   LogOut, Menu, X, GraduationCap, ChevronRight, Trophy,
-  Image as ImageIcon, Star, Mail, Bell
+  Image as ImageIcon, Star, Mail, Bell, Home
 } from 'lucide-react';
 
 const navItems = [
@@ -57,13 +59,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
 
         <div className="p-6 border-b border-white/5">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-amber-500 rounded-lg flex items-center justify-center text-black font-bold text-lg">♛</div>
+          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <div className="w-9 h-9 relative shrink-0">
+              <Image src={logo} alt="BCA Logo" fill className="object-contain" />
+            </div>
             <div>
               <p className="font-bold text-white text-sm leading-none">BCA Admin</p>
               <p className="text-gray-500 text-xs mt-0.5">Brilliant Chess Academy</p>
             </div>
-          </div>
+          </Link>
         </div>
 
         <nav className="flex-1 p-4 space-y-0.5 overflow-y-auto">
@@ -82,7 +86,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           })}
         </nav>
 
-        <div className="p-4 border-t border-white/5">
+        <div className="p-4 border-t border-white/5 space-y-1">
+          <Link href="/"
+            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+            <Home size={18} />
+            <span className="text-sm font-medium">Back to Website</span>
+          </Link>
           <button onClick={handleLogout}
             className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-400/10 transition-all">
             <LogOut size={18} />

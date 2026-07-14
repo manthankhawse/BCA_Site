@@ -34,6 +34,13 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Back to Home Button */}
+      <a
+        href="/"
+        className="absolute top-6 left-6 z-20 flex items-center gap-2 text-sm text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded-xl px-4 py-2 transition-all"
+      >
+        ← Back to Home
+      </a>
       {/* Chess pattern background */}
       <div className="absolute inset-0 opacity-5"
         style={{
