@@ -866,7 +866,7 @@ export default function BrilliantChessAcademy() {
             <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="lg:col-span-2 flex flex-col gap-4">
               {[
                 { icon: MapPin, title: "Our Location", text: "B-73, near J.P English School, Ramana Maruti Nagar, Nandanvan, Nagpur, Maharashtra 440024", color: "text-[oklch(0.769_0.188_70.08)]" },
-                { icon: Phone, title: "Phone Number", text: "+91 90284 56007", color: "text-[oklch(0.696_0.17_162.48)]" },
+                { icon: Phone, title: "Phone Number", text: "+91 9028456007\n+91 8830924866", color: "text-[oklch(0.696_0.17_162.48)]" },
                 { icon: Mail, title: "Email Address", text: "brilliantchessacademy007@gmail.com", color: "text-blue-400" }
               ].map((item, idx) => (
                 <motion.div key={idx} variants={fadeInUp} className="group bg-neutral-900/50 border border-white/10 rounded-2xl p-6 flex gap-5 items-start hover:bg-neutral-800/80 hover:border-white/20 transition-all duration-300">
