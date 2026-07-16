@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Mail, Trash2, Check, Clock, User, Phone, BookOpen, MessageSquare, RefreshCw } from 'lucide-react';
+import { Mail, Trash2, Check, Clock, Phone, RefreshCw, FileSpreadsheet, Download } from 'lucide-react';
 
 interface ContactMsg {
   _id: string;
@@ -20,10 +20,42 @@ const programLabels: Record<string, string> = {
   online: 'Online Training',
 };
 
+/** Converts messages array to a CSV string and triggers download */
+function exportToExcel(messages: ContactMsg[]) {
+  if (messages.length === 0) return;
+
+  const headers = ['#', 'Name', 'Email', 'Phone', 'Program', 'Message', 'Status', 'Received At'];
+
+  const escape = (val: string) => `"${(val ?? '').replace(/"/g, '""')}"`;
+
+  const rows = messages.map((m, i) => [
+    i + 1,
+    escape(m.name),
+    escape(m.email),
+    escape(m.phone ?? ''),
+    escape(programLabels[m.program ?? ''] ?? m.program ?? ''),
+    escape(m.message),
+    m.read ? 'Read' : 'Unread',
+    new Date(m.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
+  ]);
+
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }); // BOM for Excel UTF-8
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `BCA_Contact_Messages_${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 export default function AdminContactPage() {
   const [messages, setMessages] = useState<ContactMsg[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
+  const [exporting, setExporting] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -46,6 +78,13 @@ export default function AdminContactPage() {
     setMessages(prev => prev.filter(m => m._id !== id));
   };
 
+  const handleExport = () => {
+    setExporting(true);
+    const toExport = filtered.length > 0 ? filtered : messages;
+    exportToExcel(toExport);
+    setTimeout(() => setExporting(false), 1000);
+  };
+
   const filtered = messages.filter(m =>
     filter === 'all' ? true : filter === 'unread' ? !m.read : m.read
   );
@@ -63,7 +102,23 @@ export default function AdminContactPage() {
             {unreadCount} unread · {messages.length} total
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Export Button */}
+          <button
+            onClick={handleExport}
+            disabled={exporting || messages.length === 0}
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-emerald-400 hover:text-white hover:bg-emerald-500/20 transition-all disabled:opacity-40 disabled:pointer-events-none"
+            title={`Export ${filtered.length > 0 ? 'filtered' : 'all'} messages to Excel`}
+          >
+            {exporting ? (
+              <><div className="w-3.5 h-3.5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" /> Exporting...</>
+            ) : (
+              <><FileSpreadsheet size={14} /><Download size={12} />
+                Export {filter !== 'all' ? `${filter} ` : ''}({filtered.length})
+              </>
+            )}
+          </button>
+
           <button onClick={load} className="flex items-center gap-2 px-3 py-2 text-sm bg-white/5 border border-white/10 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 transition-all">
             <RefreshCw size={14} /> Refresh
           </button>
@@ -75,6 +130,16 @@ export default function AdminContactPage() {
           ))}
         </div>
       </div>
+
+      {/* Export Info Banner */}
+      {messages.length > 0 && (
+        <div className="flex items-center gap-3 bg-emerald-500/5 border border-emerald-500/15 rounded-xl px-4 py-3">
+          <FileSpreadsheet size={16} className="text-emerald-400 shrink-0" />
+          <p className="text-sm text-gray-400">
+            <span className="text-emerald-400 font-medium">Export to Excel</span> — Download all messages as a CSV file that opens in Excel or Google Sheets. Use filters above to export only read/unread messages.
+          </p>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center py-20">

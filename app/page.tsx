@@ -76,7 +76,7 @@ const programs = [
     level: "Remote",
     title: "Online Training",
     desc: "Learn from anywhere with live interactive coaching sessions.",
-    img: "https://images.unsplash.com/photo-1523875194681-bedd468c58bf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600",
+    img: "/assets/online-learning.png",
     color: "text-[oklch(0.769_0.188_70.08)]",
     bg: "bg-[oklch(0.769_0.188_70.08/0.2)]",
     border: "border-[oklch(0.769_0.188_70.08/0.5)]"
@@ -618,8 +618,8 @@ export default function BrilliantChessAcademy() {
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="relative order-2 lg:order-1">
               <div className="size-32 border-[oklch(0.769_0.188_70.08/0.3)] rounded-3xl border absolute -left-6 -top-6 animate-[pulse_4s_ease-in-out_infinite]" />
               <img
-                src="https://images.unsplash.com/photo-1613902863716-8a8a96fc1de2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=900"
-                alt="Coaching"
+                src="/assets/about/about-us-img.jpeg"
+                alt="Brilliant Chess Academy Coaching"
                 className="relative object-cover shadow-[0_30px_60px_-20px_oklch(0_0_0/0.8)] rounded-2xl border border-white/10 w-full h-[300px] sm:h-[400px] lg:h-[500px]"
               />
             </motion.div>
@@ -865,9 +865,9 @@ export default function BrilliantChessAcademy() {
             {/* Contact Info (Left) */}
             <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="lg:col-span-2 flex flex-col gap-4">
               {[
-                { icon: MapPin, title: "Our Location", text: "Brilliant Chess Academy, Nagpur, Maharashtra, India — 440001", color: "text-[oklch(0.769_0.188_70.08)]" },
-                { icon: Phone, title: "Phone Number", text: "+91 98765 43210\n+91 91234 56789", color: "text-[oklch(0.696_0.17_162.48)]" },
-                { icon: Mail, title: "Email Address", text: "info@brilliantchessacademy.com\ncoach@brilliantchessacademy.com", color: "text-blue-400" }
+                { icon: MapPin, title: "Our Location", text: "B-73, near J.P English School, Ramana Maruti Nagar, Nandanvan, Nagpur, Maharashtra 440024", color: "text-[oklch(0.769_0.188_70.08)]" },
+                { icon: Phone, title: "Phone Number", text: "+91 90284 56007", color: "text-[oklch(0.696_0.17_162.48)]" },
+                { icon: Mail, title: "Email Address", text: "brilliantchessacademy007@gmail.com", color: "text-blue-400" }
               ].map((item, idx) => (
                 <motion.div key={idx} variants={fadeInUp} className="group bg-neutral-900/50 border border-white/10 rounded-2xl p-6 flex gap-5 items-start hover:bg-neutral-800/80 hover:border-white/20 transition-all duration-300">
                   <div className="bg-neutral-950 border border-white/10 p-3 rounded-xl group-hover:border-[oklch(0.769_0.188_70.08/0.5)] transition-colors">
@@ -990,7 +990,7 @@ export default function BrilliantChessAcademy() {
                 </div>
               </div>
               <p className="text-[#a1a1a1] max-w-sm leading-relaxed">
-                Where strategic brilliance begins. Nurturing champions since 2014.
+                Where strategic brilliance begins.
               </p>
             </div>
 
