@@ -1,6 +1,7 @@
 "use client";
 import NextImage from "next/image";
 import logo from "@/assets/BCA Logo (Transparent).png";
+import { AdaptiveGallery } from "@/components/AdaptiveGallery";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "framer-motion";
@@ -13,35 +14,51 @@ import {
   Menu, X
 } from "lucide-react";
 
-// --- Static Data ---
-const galleryImages = [
-  "IMG-20240617-WA0017.jpg", "IMG-20240617-WA0018.jpg", "IMG-20240617-WA0022.jpg",
-  "IMG-20240617-WA0023.jpg", "IMG-20240617-WA0024.jpg", "IMG-20240617-WA0025.jpg",
-  "IMG-20240617-WA0026.jpg", "IMG-20240617-WA0027.jpg", "IMG-20240617-WA0028.jpg",
-  "IMG-20240617-WA0029.jpg", "IMG-20240617-WA0030.jpg", 
-];
+interface Achiever {
+  _id?: string;
+  name: string;
+  photo: string;
+  title: string;
+  categories: {
+    label: string;
+    items: string[];
+  }[];
+  order?: number;
+}
 
 const reviews = [
   {
-    name: "Krupal Wanjari",
-    comment: "My son joined this Academy in 2014 and has achieved a lot—from Unrated to Rated and many tournament wins. He is a champion in Under 07, 09, and 11 age groups and won an Asian Gold medal in Under-09.",
+    name: "Krushna Game",
+    comment: "Under Nilesh Sir's valuable guidance, my daughter Vritika achieved great success—selected 7 times for Nationals, becoming U-09 State School and U-13 Maharashtra Champion, and reaching the World U-10 Girls Championship.",
   },
-  // {
-  //   name: "Rudraksh Borkar",
-  //   comment: "The best academy to learn chess. BCA helps students improve step by step from beginner to advanced level.",
-  // },
+  {
+    name: "Anisha Kumbhalkar",
+    comment: "BCA is truly the best chess coaching class in Nagpur. Nilesh Sir is more like a friend to his students. His constant support helped me go from a complete beginner to achieving an international rating.",
+  },
+  {
+    name: "Sarika Titarmare",
+    comment: "From a beginner to a 1558-rated player, I'm incredibly grateful for Nilesh Sir's mentorship. His insights and invaluable encouragement helped me ace the CBSE Cluster National Championship, DSO, and Khasdar tournaments.",
+  },
+  {
+    name: "Rishikesh Kumbhalkar",
+    comment: "Nilesh Sir is an exceptionally knowledgeable coach. My sister was well-trained here, playing Under-7 Nationals twice and Under-9 Nationals. Now, many players represent the academy at National and International levels.",
+  },
+  {
+    name: "Malti Raut",
+    comment: "I feel incredibly lucky to have a coach like Nilesh Sir. He explains strategies step-by-step until you fully understand, clears every doubt down to the semi-variations, and constantly pushes you to be your best.",
+  },
+  {
+    name: "Krupal Wanjari",
+    comment: "My son joined in 2014 and achieved so much—from unrated to rated with many tournament wins. He is a multi-age champion (U-07/09/11) and won an Asian Gold medal in the Under-09 category.",
+  },
   {
     name: "Hiranmay Ingale",
-    comment: "One of the best coaching centers for chess in Nagpur. Supportive coaches and a disciplined, friendly environment.",
-  },
-  {
-    name: "Bhakti Titarmare",
-    comment: "From a beginner to a 1558-rated player, Nilesh Sir's mentorship helped me win many championships. Eternally grateful!",
+    comment: "One of the best coaching centers for chess in Nagpur. Extremely supportive coaches and a highly disciplined, yet friendly and motivating learning environment.",
   },
   {
     name: "Shruti Nakhate",
-    comment: "The academy is excellent. Very good environment—safe, friendly, and highly effective coaching. Highly recommend a visit!",
-  },
+    comment: "The academy is absolutely excellent. It provides a very safe, friendly, and highly effective coaching environment. I highly recommend a visit for any aspiring player!",
+  }
 ];
 
 const programs = [
@@ -197,6 +214,7 @@ export default function BrilliantChessAcademy() {
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [reviewIndex, setReviewIndex] = useState(0);
+  const [achieverIndex, setAchieverIndex] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // JSON-LD schema markup for LocalBusiness SEO
@@ -236,12 +254,14 @@ export default function BrilliantChessAcademy() {
       "closes": "20:00"
     },
     "sameAs": [
-      "https://www.facebook.com/brilliantchessacademy",
+      "https://www.facebook.com/nilchess/",
       "https://www.instagram.com/brilliantchessacademy"
     ]
   };
 
   const [liveReviews, setLiveReviews] = useState<typeof reviews | null>(null);
+  const [liveGallery, setLiveGallery] = useState<{ url: string; caption?: string }[] | null>(null);
+  const [liveAchievers, setLiveAchievers] = useState<Achiever[] | null>(null);
   const [tournaments, setTournaments] = useState<any[]>([]);
   const [tourIndex, setTourIndex] = useState(0);
   const [tourLoading, setTourLoading] = useState(true);
@@ -252,6 +272,8 @@ export default function BrilliantChessAcademy() {
   const [contactError, setContactError] = useState("");
 
   const displayReviews = liveReviews && liveReviews.length > 0 ? liveReviews : reviews;
+  const displayAchievers = liveAchievers || [];
+  const displayGallery = liveGallery || [];
 
   // --- Physics-based Parallax Setup ---
   const { scrollY } = useScroll();
@@ -281,6 +303,25 @@ export default function BrilliantChessAcademy() {
       .then(r => r.json())
       .then(d => { if (d.reviews?.length) setLiveReviews(d.reviews); })
       .catch(() => {});
+  }, []);
+
+  // Fetch live gallery
+  useEffect(() => {
+    fetch("/api/gallery")
+      .then(r => r.json())
+      .then(d => { setLiveGallery(d.items || []); })
+      .catch(() => setLiveGallery([]));
+  }, []);
+
+  // Fetch live achievers
+  useEffect(() => {
+    fetch("/api/achievements")
+      .then(r => r.json())
+      .then(d => {
+        setLiveAchievers(d.achievers || []);
+        setAchieverIndex(0);
+      })
+      .catch(() => setLiveAchievers([]));
   }, []);
 
   // Fetch upcoming tournaments (public)
@@ -372,13 +413,14 @@ export default function BrilliantChessAcademy() {
           </motion.div>
 
           <nav className="hidden md:flex justify-center items-center gap-8">
-            {["Home", "Programs", "About us", "Gallery", "Contact"].map((item, i) => (
+            {["Home", "Programs", "About us", "Gallery", "Achievements", "Contact"].map((item, i) => (
               <motion.a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
                 className="relative group transition-colors font-medium text-[#a1a1a1] hover:text-white text-sm leading-5 flex items-center gap-1.5 cursor-pointer">
                 {item === "Home" && <Home className="size-4" />}
                 {item === "Programs" && <BookOpen className="size-4" />}
                 {item === "About us" && <Info className="size-4" />}
                 {item === "Gallery" && <ImageIcon className="size-4" />}
+                {item === "Achievements" && <Trophy className="size-4" />}
                 {item === "Contact" && <Mail className="size-4" />}
                 {item}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[oklch(0.769_0.188_70.08)] transition-all duration-300 group-hover:w-full" />
@@ -427,7 +469,7 @@ export default function BrilliantChessAcademy() {
                 className="absolute top-full left-0 w-full bg-neutral-950/95 backdrop-blur-2xl border-b border-white/10 md:hidden overflow-hidden shadow-2xl z-50"
               >
                 <div className="flex flex-col px-6 py-6 gap-5">
-                  {["Home", "Programs", "About us", "Gallery", "Contact"].map((item) => (
+                  {["Home", "Programs", "About us", "Gallery", "Achievements", "Contact"].map((item) => (
                     <a
                       key={item}
                       href={`#${item.toLowerCase().replace(' ', '-')}`}
@@ -438,6 +480,7 @@ export default function BrilliantChessAcademy() {
                       {item === "Programs" && <BookOpen className="size-4 text-[oklch(0.769_0.188_70.08)]" />}
                       {item === "About us" && <Info className="size-4 text-[oklch(0.769_0.188_70.08)]" />}
                       {item === "Gallery" && <ImageIcon className="size-4 text-[oklch(0.769_0.188_70.08)]" />}
+                      {item === "Achievements" && <Trophy className="size-4 text-[oklch(0.769_0.188_70.08)]" />}
                       {item === "Contact" && <Mail className="size-4 text-[oklch(0.769_0.188_70.08)]" />}
                       {item}
                     </a>
@@ -655,53 +698,144 @@ export default function BrilliantChessAcademy() {
         </div>
       </section>
 
-      {/* Achievements Gallery Section */}
-      <section id="gallery" className="relative py-32 w-full bg-neutral-950 overflow-hidden border-y border-white/5">
-        <motion.div style={{ y: subtleParallax }} className="bg-[radial-gradient(circle_at_80%_50%,oklch(0.769_0.188_70.08/0.05),transparent_50%)] absolute inset-0 pointer-events-none h-[120%]" />
-        
-        <div className="relative max-w-[1140px] mx-auto px-8 z-10">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="text-center flex mb-16 flex-col items-center gap-4">
-            <span className="text-[oklch(0.769_0.188_70.08)] uppercase text-xs tracking-[4.8px] font-semibold">Success Stories</span>
-            <h2 className="font-serif font-medium text-5xl leading-tight">Achievements</h2>
-            <div className="bg-gradient-to-r from-transparent via-[oklch(0.769_0.188_70.08)] to-transparent rounded-full w-24 h-0.5" />
-            <p className="max-w-xl text-[#a1a1a1] text-lg">Glimpses of our champions making their mark on the board.</p>
-          </motion.div>
+      {/* Student Achievements Section */}
+      {displayAchievers.length > 0 && (
+        <section id="achievements" className="relative py-32 w-full bg-neutral-950 overflow-hidden">
+          <div className="bg-[radial-gradient(circle_at_15%_30%,oklch(0.769_0.188_70.08/0.07),transparent_50%)] absolute inset-0 pointer-events-none" />
+          <div className="bg-[radial-gradient(circle_at_85%_70%,oklch(0.696_0.17_162.48/0.05),transparent_50%)] absolute inset-0 pointer-events-none" />
 
-          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-[240px]">
-            {galleryImages.map((img, index) => {
-              const isLarge = index === 0;
-              const isTall = index === 3 || index === 7;
-              const spanClass = isLarge ? "md:col-span-2 md:row-span-2" : isTall ? "md:row-span-2" : "";
-              
-              return (
-                <motion.a
-                  variants={fadeInUp}
-                  key={index}
-                  href={`/assets/gallery/${img}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`group relative block overflow-hidden rounded-2xl bg-neutral-900 border border-white/10 ${spanClass}`}
+          <div className="relative max-w-[1140px] mx-auto px-6 sm:px-8 z-10">
+            {/* Section Header */}
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="text-center flex mb-16 flex-col items-center gap-4">
+              <span className="text-[oklch(0.769_0.188_70.08)] uppercase text-xs tracking-[4.8px] font-semibold">Champions</span>
+              <h2 className="font-serif font-medium text-5xl leading-tight">Student Achievements</h2>
+              <div className="bg-gradient-to-r from-transparent via-[oklch(0.769_0.188_70.08)] to-transparent rounded-full w-24 h-0.5" />
+              <p className="max-w-xl text-[#a1a1a1] text-lg">Meet the brilliant minds who have made us proud on the national and international stage.</p>
+            </motion.div>
+
+            {/* Card + floating side arrows — same pattern as reviews section */}
+            <div className="relative max-w-4xl mx-auto">
+              {/* Left arrow — outside card */}
+              <button
+                onClick={() => setAchieverIndex(p => (p - 1 + displayAchievers.length) % displayAchievers.length)}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-12 z-20 bg-neutral-950/80 border border-white/20 text-white hover:bg-[oklch(0.769_0.188_70.08)] hover:text-black hover:border-[oklch(0.769_0.188_70.08)] p-3 md:p-4 rounded-full shadow-xl transition-all duration-300 cursor-pointer"
+                aria-label="Previous champion"
+              >
+                <ChevronLeft className="size-5" />
+              </button>
+
+              {/* Right arrow — outside card */}
+              <button
+                onClick={() => setAchieverIndex(p => (p + 1) % displayAchievers.length)}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-12 z-20 bg-neutral-950/80 border border-white/20 text-white hover:bg-[oklch(0.769_0.188_70.08)] hover:text-black hover:border-[oklch(0.769_0.188_70.08)] p-3 md:p-4 rounded-full shadow-xl transition-all duration-300 cursor-pointer"
+                aria-label="Next champion"
+              >
+                <ChevronRight className="size-5" />
+              </button>
+
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={achieverIndex}
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -24 }}
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  className="relative rounded-3xl overflow-hidden border border-white/10 bg-neutral-900/30 backdrop-blur-xl shadow-2xl mx-6 md:mx-0"
                 >
-                  <img
-                    src={`/assets/gallery/${img}`}
-                    alt={`Achievement ${index + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
-                    style={{ backgroundColor: '#1a1a1a' }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
-                    <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                      <div className="inline-flex items-center gap-2 bg-[oklch(0.769_0.188_70.08)] text-black px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-2">
-                        <Trophy className="size-3" /> Winner
+                  {/* Decorative ambient glows */}
+                  <div className="absolute top-0 right-0 w-96 h-96 bg-[oklch(0.769_0.188_70.08/0.06)] rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                  
+                  {/* Dynamic layout container instead of fixed height grid */}
+                  <div className="relative flex flex-col md:flex-row items-center md:items-start p-6 sm:p-8 lg:p-10 gap-8 lg:gap-12">
+
+                    {/* ── Left: Profile Image Box ── */}
+                    <div className="flex flex-col items-center shrink-0 w-full sm:w-[260px] md:w-[280px]">
+                      <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 rounded-2xl overflow-hidden border-2 border-white/10 shadow-xl bg-neutral-950">
+                        {displayAchievers[achieverIndex] && (
+                          <img
+                            src={displayAchievers[achieverIndex].photo}
+                            alt={displayAchievers[achieverIndex].name}
+                            className="w-full h-full object-cover object-top transition-transform duration-500 hover:scale-[1.03]"
+                          />
+                        )}
                       </div>
-                      <p className="text-white font-medium">Tournament Highlight {index + 1}</p>
+                      
+                      {/* Student Info pinned safely below the clean photo area */}
+                      <div className="text-center mt-5 w-full">
+                        <h3 className="font-serif font-medium text-2xl text-white leading-tight">
+                          {displayAchievers[achieverIndex]?.name}
+                        </h3>
+                        <p className="text-neutral-400 text-xs mt-1 max-w-[220px] mx-auto">
+                          {displayAchievers[achieverIndex]?.title}
+                        </p>
+                      </div>
                     </div>
+
+                    {/* ── Right: Achievements Flow ── */}
+                    <div className="flex-grow w-full border-t md:border-t-0 md:border-l border-white/10 pt-6 md:pt-0 md:pl-8 lg:pl-12 flex flex-col gap-6">
+                      {displayAchievers[achieverIndex] && (
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-[3.5px] text-[oklch(0.769_0.188_70.08)] mb-3 flex items-center gap-2">
+                            Notable Achievements
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {displayAchievers[achieverIndex].categories.flatMap(cat => cat.items).map((item, ai) => (
+                              <span 
+                                key={ai} 
+                                className="inline-flex items-center bg-white/5 border border-white/5 hover:border-[oklch(0.769_0.188_70.08/0.3)] text-neutral-200 text-xs sm:text-sm leading-snug rounded-xl px-4 py-2 transition-all duration-200 cursor-default shadow-sm"
+                              >
+                                {item}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
                   </div>
-                </motion.a>
-              );
-            })}
-          </motion.div>
-        </div>
-      </section>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Dot indicators */}
+              <div className="flex justify-center gap-2.5 mt-8">
+                {displayAchievers.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setAchieverIndex(i)}
+                    className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                      i === achieverIndex
+                        ? 'bg-[oklch(0.769_0.188_70.08)] w-8 shadow-[0_0_10px_oklch(0.769_0.188_70.08)]'
+                        : 'bg-white/20 w-2 hover:bg-white/40'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Photo Gallery Section */}
+      {displayGallery.length > 0 && (
+        <section id="gallery" className="relative py-32 w-full bg-neutral-950 overflow-hidden border-y border-white/5">
+          <motion.div style={{ y: subtleParallax }} className="bg-[radial-gradient(circle_at_80%_50%,oklch(0.769_0.188_70.08/0.05),transparent_50%)] absolute inset-0 pointer-events-none h-[120%]" />
+          
+          <div className="relative max-w-[1140px] mx-auto px-8 z-10">
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="text-center flex mb-16 flex-col items-center gap-4">
+              <span className="text-[oklch(0.769_0.188_70.08)] uppercase text-xs tracking-[4.8px] font-semibold">Our Moments</span>
+              <h2 className="font-serif font-medium text-5xl leading-tight">Gallery</h2>
+              <div className="bg-gradient-to-r from-transparent via-[oklch(0.769_0.188_70.08)] to-transparent rounded-full w-24 h-0.5" />
+              <p className="max-w-xl text-[#a1a1a1] text-lg">Glimpses of our students making their mark on the board.</p>
+            </motion.div>
+
+            {/* Adaptive gallery — each image sizes itself from its natural dimensions */}
+            <AdaptiveGallery
+              images={displayGallery}
+              clickable
+            />
+          </div>
+        </section>
+      )}
 
       {/* Tournaments Section */}
       <section id="tournaments" className="relative py-32 w-full overflow-hidden">
@@ -817,7 +951,7 @@ export default function BrilliantChessAcademy() {
                   <h3 className="text-lg font-bold text-[oklch(0.769_0.188_70.08)] tracking-wide uppercase">
                     {displayReviews[reviewIndex]?.name}
                   </h3>
-                  <span className="text-[#a1a1a1] text-xs uppercase tracking-[2px] mt-1 block">{(displayReviews[reviewIndex] as any)?.role || 'BCA Student / Parent'}</span>
+                  {/* <span className="text-[#a1a1a1] text-xs uppercase tracking-[2px] mt-1 block">{(displayReviews[reviewIndex] as any)?.role || 'BCA Student / Parent'}</span> */}
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -883,9 +1017,18 @@ export default function BrilliantChessAcademy() {
               <motion.div variants={fadeInUp} className="mt-4">
                 <span className="text-[oklch(0.769_0.188_70.08)] uppercase text-xs tracking-[4px] font-semibold mb-4 block">Follow Us</span>
                 <div className="flex gap-3">
-                  {[Facebook, Twitter, Instagram, Linkedin].map((Icon, idx) => (
-                    <a key={idx} href="#" className="bg-neutral-900/80 border border-white/10 p-3 rounded-xl hover:bg-[oklch(0.769_0.188_70.08)] hover:text-neutral-950 transition-all duration-300">
-                      <Icon className="size-5" />
+                  {[
+                    { Icon: Facebook, url: "https://www.facebook.com/nilchess/" },
+                    { Icon: Instagram, url: "https://www.instagram.com/bca_chess/" }
+                  ].map(({ Icon, url }, idx) => (
+                    <a 
+                      key={idx} 
+                      href={url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="bg-neutral-900 border border-white/10 p-3 rounded-lg hover:bg-white/10 hover:border-white/30 transition-all duration-300 group cursor-pointer"
+                    >
+                      <Icon className="size-5 text-white group-hover:text-[oklch(0.769_0.188_70.08)] transition-colors" />
                     </a>
                   ))}
                 </div>
@@ -997,7 +1140,7 @@ export default function BrilliantChessAcademy() {
             <div className="md:col-span-3">
               <h4 className="text-[oklch(0.769_0.188_70.08)] uppercase text-xs tracking-[4px] font-semibold mb-6">Navigation</h4>
               <ul className="flex flex-col gap-4">
-                {["Home", "Programs", "About us", "Gallery", "Contact"].map((item) => (
+                {["Home", "Programs", "About us", "Gallery", "Achievements", "Contact"].map((item) => (
                   <li key={item}>
                     <a href={`#${item.toLowerCase().replace(' ', '-')}`} className="text-[#a1a1a1] hover:text-white transition-colors flex items-center gap-2 group w-fit">
                       <span className="h-px w-0 bg-[oklch(0.769_0.188_70.08)] group-hover:w-4 transition-all duration-300" />
@@ -1010,14 +1153,23 @@ export default function BrilliantChessAcademy() {
 
             <div className="md:col-span-4 flex flex-col items-start md:items-end text-left md:text-right">
               <div className="flex gap-3 mb-8">
-                {[Facebook, Twitter, Instagram].map((Icon, idx) => (
-                  <a key={idx} href="#" className="bg-neutral-900 border border-white/10 p-3 rounded-lg hover:bg-white/10 hover:border-white/30 transition-all duration-300 group">
+                {[
+                  { Icon: Facebook, url: "https://www.facebook.com/nilchess/" },
+                  { Icon: Instagram, url: "https://www.instagram.com/bca_chess/" }
+                ].map(({ Icon, url }, idx) => (
+                  <a 
+                    key={idx} 
+                    href={url} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="bg-neutral-900 border border-white/10 p-3 rounded-lg hover:bg-white/10 hover:border-white/30 transition-all duration-300 group cursor-pointer"
+                  >
                     <Icon className="size-5 text-white group-hover:text-[oklch(0.769_0.188_70.08)] transition-colors" />
                   </a>
                 ))}
               </div>
               <div className="flex flex-col items-start md:items-end gap-2">
-                <p className="text-[#a1a1a1] text-sm md:text-right">© 2024 Brilliant Chess Academy<br/>All rights reserved.</p>
+                <p className="text-[#a1a1a1] text-sm md:text-right">© {(new Date()).getFullYear()} Brilliant Chess Academy<br/>All rights reserved.</p>
  
               </div>
             </div>
@@ -1026,7 +1178,7 @@ export default function BrilliantChessAcademy() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-[#a1a1a1] text-xs">
             <div className="flex items-center gap-2">
               <Crown className="size-3 text-[oklch(0.769_0.188_70.08)]" />
-              <span>Brilliant Chess Academy — Nurturing Strategic Brilliance Since 2014</span>
+              <span>Brilliant Chess Academy</span>
             </div>
             <div className="flex gap-6">
               <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
